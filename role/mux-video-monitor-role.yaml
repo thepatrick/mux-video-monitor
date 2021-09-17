@@ -8,7 +8,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName: MuxVideoMonitorGithubRole
-      ManagedPolicyArns: [arn:aws:iam::aws:policy/ReadOnlyAccess]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/AdministratorAccess]
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
