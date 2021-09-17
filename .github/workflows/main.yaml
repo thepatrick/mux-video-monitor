@@ -1,17 +1,27 @@
 # .github/workflows/example.yml
-name: Example
+name: Mux Video Monitor
 
 on:
   push:
     branches:
       - main
 
+env:
+  HOSTED_ZONE_ID: Z09102521YXWQT2ZKMPP7
+  APP_DOMAIN: mux-monitor.aws.nextdayvideo.com.au
+
 jobs:
-  build:
+  deploy-backend:
+    name: Deploy Backend
     runs-on: ubuntu-latest
+
     permissions:
       id-token: write
       contents: read
+
+    outputs:
+      frontendBucket: ${{ steps.deploy.outputs.frontendBucket }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,4 +30,14 @@ jobs:
 
       - name: Configure AWS
         run: ./ci/configure-aws.sh
-      - run: aws sts get-caller-identity # just an example. why not deploy something?
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2 # default
+          verbose: false # default
+          
+      - name: Deploy deployment.cfn.yaml
+        id: deploy
+        run: |
+          ./infra/deploy.sh
