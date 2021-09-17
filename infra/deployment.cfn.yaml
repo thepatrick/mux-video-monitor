@@ -127,25 +127,25 @@ Resources:
           MinimumProtocolVersion: 'TLSv1.1_2016'
           SslSupportMethod: 'sni-only'
 
-  # SecondDNSIPv4:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     AliasTarget:
-  #       DNSName: !GetAtt "FrontendDistribution.DomainName"
-  #       HostedZoneId: "Z2FDTNDATAQYW2"
-  #     HostedZoneId: !Ref "HostedZoneId"
-  #     Name: !Ref "AppDomain"
-  #     Type: "A"
+  AppDomainDNSv4:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt "FrontendDistribution.DomainName"
+        HostedZoneId: "Z2FDTNDATAQYW2"
+      HostedZoneId: !Ref "HostedZoneId"
+      Name: !Ref "AppDomain"
+      Type: "A"
 
-  # SecondDNSIPv6:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     AliasTarget:
-  #       DNSName: !GetAtt "FrontendDistribution.DomainName"
-  #       HostedZoneId: "Z2FDTNDATAQYW2"
-  #     HostedZoneId: !Ref "HostedZoneId"
-  #     Name: !Ref "AppDomain"
-  #     Type: "AAAA"
+  AppDomainDNSv6:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt "FrontendDistribution.DomainName"
+        HostedZoneId: "Z2FDTNDATAQYW2"
+      HostedZoneId: !Ref "HostedZoneId"
+      Name: !Ref "AppDomain"
+      Type: "AAAA"
 
 Outputs:
   # FrontendURL:
