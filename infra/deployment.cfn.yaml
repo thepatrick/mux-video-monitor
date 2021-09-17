@@ -27,92 +27,105 @@ Resources:
     Type: "AWS::S3::Bucket"
     Properties:
       AccessControl: "PublicRead"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+          SSEAlgorithm: AES256
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
-      WebsiteConfiguration:
-        IndexDocument: "index.html"
-        ErrorDocument: "index.html"
+
+  FrontendAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${AppDomain}'
   
   FrontendWebsiteBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
       Bucket: !Ref "FrontendWebsite"
       PolicyDocument:
-        "Version": "2012-10-17"
-        "Statement":
-        - "Effect": "Allow"
-          "Principal": "*"
-          "Action":
+        Version: "2012-10-17"
+        Statement:
+        - Principal:
+            CanonicalUser: !GetAtt FrontendAccessIdentity.S3CanonicalUserId
+          Action:
           - "s3:GetObject"
-          "Resource":
+          Resource:
           - !Sub "arn:aws:s3:::${FrontendWebsite}/*"
+          Effect: "Allow"
+       
+  FrontendDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Aliases:
+        - !Ref AppDomain
+        CacheBehaviors:
+        - AllowedMethods:
+          - "GET"
+          - "HEAD"
+          CachedMethods:
+          - "GET"
+          - "HEAD"
+          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
+          Compress: true
+          PathPattern: "index.html"
+          TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
+          ViewerProtocolPolicy: "redirect-to-https"
+        # - AllowedMethods:
+        #   - "GET"
+        #   - "HEAD"
+        #   - "POST"
+        #   - "OPTIONS"
+        #   - "DELETE"
+        #   - "PUT"
+        #   - "PATCH"
+        #   CachedMethods:
+        #   - "GET"
+        #   - "HEAD"
+        #   CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
+        #   Compress: true
+        #   PathPattern: "/api/*"
+        #   TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
+        #   ViewerProtocolPolicy: "redirect-to-https"
+        DefaultRootObject: "index.html"
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - "GET"
+          - "HEAD"
+          CachedMethods:
+          - "GET"
+          - "HEAD"
+          CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6" # "Managed-CachingOptimized"
+          Compress: true
+          TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
+          ViewerProtocolPolicy: "redirect-to-https"
+        Enabled: true
+        HttpVersion: "http2"
+        IPV6Enabled: true
+        Origins:
+          - DomainName: !Sub "${FrontendWebsite}.s3.amazonaws.com"
+            Id: !Sub "${AWS::StackName}-FrontendOrigin"
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${FrontendAccessIdentity}"
 
-  # FrontendDistribution:
-  #   Type: "AWS::CloudFront::Distribution"
-  #   Properties:
-  #     DistributionConfig:
-  #       Aliases:
-  #       - !Ref AppDomain
-  #       CacheBehaviors:
-  #       - AllowedMethods:
-  #         - "GET"
-  #         - "HEAD"
-  #         CachedMethods:
-  #         - "GET"
-  #         - "HEAD"
-  #         CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
-  #         Compress: true
-  #         PathPattern: "index.html"
-  #         TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
-  #         ViewerProtocolPolicy: "redirect-to-https"
-  #       - AllowedMethods:
-  #         - "GET"
-  #         - "HEAD"
-  #         - "POST"
-  #         - "OPTIONS"
-  #         - "DELETE"
-  #         - "PUT"
-  #         - "PATCH"
-  #         CachedMethods:
-  #         - "GET"
-  #         - "HEAD"
-  #         CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
-  #         Compress: true
-  #         PathPattern: "/api/*"
-  #         TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
-  #         ViewerProtocolPolicy: "redirect-to-https"
-  #       DefaultRootObject: "index.html"
-  #       DefaultCacheBehavior:
-  #         AllowedMethods:
-  #         - "GET"
-  #         - "HEAD"
-  #         CachedMethods:
-  #         - "GET"
-  #         - "HEAD"
-  #         CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6" # "Managed-CachingOptimized"
-  #         Compress: true
-  #         TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
-  #         ViewerProtocolPolicy: "redirect-to-https"
-  #       Enabled: true
-  #       HttpVersion: "http2"
-  #       IPV6Enabled: true
-  #       Origins:
-  #       - CustomOriginConfig:
-  #           OriginProtocolPolicy: "http-only"
-  #         DomainName: !Sub "${FrontendWebsite}.s3-website-${AWS::Region}.amazonaws.com"
-  #         Id: !Sub "${AWS::StackName}-FrontendOrigin"
-  #       - CustomOriginConfig:
-  #           OriginProtocolPolicy: "https-only"
-  #         DomainName: !Sub ${BackendAPI}.execute-api.${AWS::Region}.amazonaws.com
-  #         Id: !Sub "${AWS::StackName}-BackendOrigin"
-  #       PriceClass: 'PriceClass_All'
-  #       ViewerCertificate:
-  #         AcmCertificateArn: !Ref 'FrontendWebsiteCertificate'
-  #         MinimumProtocolVersion: 'TLSv1.1_2016'
-  #         SslSupportMethod: 'sni-only'
+        # - CustomOriginConfig:
+        #     OriginProtocolPolicy: "http-only"
+        #   DomainName: !Sub "${FrontendWebsite}.s3-website-${AWS::Region}.amazonaws.com"
+        #   Id: !Sub "${AWS::StackName}-FrontendOrigin"
+        # - CustomOriginConfig:
+        #     OriginProtocolPolicy: "https-only"
+        #   DomainName: !Sub ${BackendAPI}.execute-api.${AWS::Region}.amazonaws.com
+        #   Id: !Sub "${AWS::StackName}-BackendOrigin"
+        PriceClass: 'PriceClass_All'
+        ViewerCertificate:
+          AcmCertificateArn: !Ref "AppCertificate"
+          MinimumProtocolVersion: 'TLSv1.1_2016'
+          SslSupportMethod: 'sni-only'
 
   # SecondDNSIPv4:
   #   Type: AWS::Route53::RecordSet
