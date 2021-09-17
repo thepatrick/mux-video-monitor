@@ -7,15 +7,16 @@ cd $(dirname "$0")/..
 . ../ci/functions.sh
 
 start_group "Installing dependencies"
-# npm ci
-echo "None yet"
+npm ci
 end_group
 
+# start_group "Lint"
+# npm run lint
+# end_group
+
 start_group "Building"
-# npm run clean
-# npm run build
-mkdir dist
-cp index.html dist/index.html
+npm run clean
+npm run build
 end_group
 
 start_group "Uploading to s3://$FRONTEND_BUCKET"

@@ -6,7 +6,8 @@
     "start": "parcel src/*.html",
     "build": "tsc --noEmit && parcel build src/*.html",
     "lint": "eslint --ext .ts ./src/ && prettier --check ./src/",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf dist"
   },
   "author": "",
   "license": "ISC",
