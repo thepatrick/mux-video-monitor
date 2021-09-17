@@ -20,5 +20,6 @@ npm run build
 end_group
 
 start_group "Uploading to s3://$FRONTEND_BUCKET"
-aws s3 sync dist/ "s3://${FRONTEND_BUCKET}/"
+aws s3 sync --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete ./dist "s3://${FRONTEND_BUCKET}/"
+aws s3 sync --include "*" --exclude "*.html" --delete ./dist  "s3://${FRONTEND_BUCKET}/"
 end_group
