@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cast</title>
+
+    <link href="css/dynamic.css" rel="stylesheet">
+
+    <script type="module" src="js/cast"></script>
+  </head>
+  <body>
+    <div id="cast-controls">
+      <google-cast-launcher></google-cast-launcher>
+    </div>
+
+
+    <div id="room-name">...</div>
+
+    <div id="offline" style="display: none;">
+      <p>Not live</p>
+      <p><small>Reason...</small></p>
+      <h1>⚠️</h1>
+    </div>
+
+    <div id="warning" style="display: none;">
+      <p>⚠️ <small>Reason...</small></p>
+    </div>
+
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+  </body>
+</html>
