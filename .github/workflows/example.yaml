@@ -16,5 +16,5 @@ jobs:
       - run: sleep 5 # there's still a race condition for now
 
       - name: Configure AWS
-        run: ci/configure-aws.sh
+        run:  ./ci/configure-aws.sh
       - run: aws sts get-caller-identity # just an example. why not deploy something?
