@@ -40,4 +40,5 @@ jobs:
       - name: Deploy deployment.cfn.yaml
         id: deploy
         run: |
-          ./infra/deploy.sh
+          cd infra
+          ./deploy.sh
