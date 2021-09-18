@@ -1,5 +1,6 @@
 # To Do
 
+0. Fix `npm build` (do something about the tests in the audio meter I guess)
 1. Make work in Safari (maybe by moving away from ScriptProcessorNode?)
 2. Change font of the ticks in the meter
 3. Add a "Start meters but don't unmute" type button
