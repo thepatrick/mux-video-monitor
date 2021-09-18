@@ -158,8 +158,6 @@ export function createPeakBars(
         borderSize * 2 + tickWidth / channelCount
       }px})) * ${i}) + ${tickWidth + borderSize * (i + 2)}px)`;
       barDiv.style.transition = `height ${maskTransition}`;
-
-      // `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
     });
   }
 

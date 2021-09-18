@@ -1,6 +1,6 @@
 interface SetTitleLabelArguments {
   loading?: boolean;
-  live?: false;
+  live?: boolean;
   error?: string;
 }
 
