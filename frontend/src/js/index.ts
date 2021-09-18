@@ -1,27 +1,13 @@
+import { anchor, appendChild, listItem } from './dom';
 import { castURI, fetchRooms, viewerURI } from './fetchRooms';
 
-const createLink = (href: string, label: string): HTMLAnchorElement => {
-  const link = document.createElement('a');
-  link.setAttribute('href', href);
-  link.innerText = label;
-  return link;
-};
-
-export const createRoomLink =
-  (within: HTMLElement) =>
-  (id: string, label: string): void => {
-    const base = document.createElement('li');
-    base.appendChild(createLink(viewerURI(id), label));
-    base.appendChild(document.createTextNode(' ['));
-    base.appendChild(createLink(castURI(id), 'Cast'));
-    base.appendChild(document.createTextNode(']'));
-    within.append(base);
-  };
+const createRoomLink = (id: string, label: string): HTMLLIElement =>
+  listItem([anchor(viewerURI(id), [label]), ' [', anchor(castURI(id), 'Cast'), ']']);
 
 const run = async () => {
   const roomList = document.getElementById('room-list');
 
-  const roomLink = createRoomLink(roomList);
+  const appendChildToRoomList = appendChild(roomList);
 
   const roomsResponse = await fetchRooms();
 
@@ -31,8 +17,10 @@ const run = async () => {
   }
 
   for (const { id, name } of roomsResponse.rooms) {
-    roomLink(id, name);
+    appendChildToRoomList(createRoomLink(id, name));
   }
+
+  appendChildToRoomList(listItem([anchor('all.html', 'Multiview')]));
 };
 
 run().catch((err) => console.error('Failed somewhere', err));
