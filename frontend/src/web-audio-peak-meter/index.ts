@@ -1,44 +1,9 @@
 import { createBars, createContainerDiv, createMasks, createPeakLabels, createTicks, paintMeter } from './markup';
 import { MeterData } from './MeterData';
+import { NodeConfig, defaultNodeConfig, Config, defaultConfig } from './Config';
 import { calculateMaxValues } from './peak-sample';
 import { calculateTPValues } from './true-peak';
 import { findAudioProcBufferSize } from './utils';
-
-interface NodeConfig {
-  refreshEveryApproxMs: number;
-}
-
-interface Config {
-  borderSize: number;
-  fontSize: number;
-  backgroundColor: string;
-  tickColor: string;
-  labelColor: string;
-  gradient: string[];
-  dbRange: number;
-  dbTickSize: number;
-  maskTransition: string;
-  audioMeterStandard: 'peak-sample' | 'true-peak';
-  peakHoldDuration: number;
-}
-
-const defaultNodeConfig: NodeConfig = {
-  refreshEveryApproxMs: 20,
-};
-
-const defaultConfig: Config = {
-  borderSize: 2,
-  fontSize: 9,
-  backgroundColor: 'black',
-  tickColor: '#ddd',
-  labelColor: '#ddd',
-  gradient: ['red 1%', '#ff0 16%', 'lime 45%', '#080 100%'],
-  dbRange: 48,
-  dbTickSize: 6,
-  maskTransition: '0.1s',
-  audioMeterStandard: 'peak-sample', // Could be "true-peak" (ITU-R BS.1770) or "peak-sample"
-  peakHoldDuration: null,
-};
 
 export function createMeterNode(
   sourceNode: AudioNode,
@@ -88,7 +53,11 @@ function updateMeter(audioProcessingEvent: AudioProcessingEvent, config: Config,
   }
 }
 
-export function createMeter(domElement: HTMLElement, meterNode: ScriptProcessorNode, options: Partial<Config> = {}) {
+export function createMeter(
+  domElement: HTMLElement,
+  meterNode: ScriptProcessorNode,
+  options: Partial<Config> = {},
+): void {
   // eslint-disable-next-line prefer-object-spread
   const config = { ...defaultConfig, ...options };
 
@@ -115,6 +84,7 @@ export function createMeter(domElement: HTMLElement, meterNode: ScriptProcessorN
   };
 
   meterNode.onaudioprocess = (evt) => updateMeter(evt, config, meterData);
+
   meterElement.addEventListener(
     'click',
     () => {

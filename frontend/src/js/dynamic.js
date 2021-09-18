@@ -4,6 +4,8 @@ import { fetchState } from './fetchState';
 import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeterForMultiview';
 import { wait } from './wait';
 
+import Hls from 'hls.js';
+
 const run = async () => {
   if (!Hls.isSupported()) {
     alert('This multiview is only intended for use with hls.js, sorry');

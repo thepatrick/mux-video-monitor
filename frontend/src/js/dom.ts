@@ -51,3 +51,4 @@ export const anchor = <T extends Node>(href: string, childOrChildren: ElmChildre
   a(childOrChildren, { href });
 
 export const listItem = elm('li');
+export const div = elm('div');
