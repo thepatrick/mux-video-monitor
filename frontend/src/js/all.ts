@@ -18,17 +18,12 @@ const createMuteExcept = (muteFunctions: volumeFn[]): ((focussed: number) => voi
   };
 };
 
-type StreamHTMLIFrameElement = {
-  setupAudioMeterForMultiview(): volumeFn;
-};
-
 const createMuteFunction = (frame: HTMLIFrameElement): volumeFn => {
-  // TODO: Make this... better or something.
-
-  const setGain = (frame.contentWindow as unknown as StreamHTMLIFrameElement).setupAudioMeterForMultiview();
+  frame.contentWindow.postMessage({ SetupAudioMeter: true });
 
   return (volume: number) => {
-    setGain(volume);
+    frame.contentWindow.postMessage({ SetAudioVolume: true, volume });
+    // setGain(volume);
   };
 };
 
@@ -123,7 +118,8 @@ const run = async () => {
     }
   }
 
-  createStartAudioHopper(document.body, void createAudioController(streamFrames, rotateSpeed * 1000));
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  createStartAudioHopper(document.body, createAudioController(streamFrames, rotateSpeed * 1000));
 };
 
 run().catch((err) => console.error('Failed somewhere', err));

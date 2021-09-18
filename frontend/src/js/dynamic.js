@@ -1,74 +1,8 @@
+import { createSetTitleLabel } from './dynamic/createSetTitleLabel';
 import { fetchRooms } from './fetchRooms';
+import { fetchState } from './fetchState';
+import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeterForMultiview';
 import { wait } from './wait';
-
-const fetchState = async (displayName, id) => {
-  try {
-    const before = Date.now();
-    const fetchResponse = await fetch(
-      `https://fpylzao93a.execute-api.ap-southeast-2.amazonaws.com/api/stream/${encodeURIComponent(id)}`,
-    );
-    const state = await fetchResponse.json();
-
-    const totalTime = Date.now() - before;
-
-    console.log(`[${displayName}] Got state in ${totalTime}ms`, state);
-
-    return state;
-  } catch (err) {
-    return { ok: false, error: err.message };
-  }
-};
-
-const createSetTitleLabel =
-  (el, room) =>
-  ({ loading = false, live = false, error }) => {
-    let description = '';
-    if (loading) {
-      description = '...';
-    } else if (error) {
-      description = `: ${error}`;
-    } else if (live) {
-      description = ' (live)';
-    } else {
-      description = ' (offline)';
-    }
-    el.textContent = `${room}${description}`;
-  };
-
-const mountSetupAudioMeterForMultiview = (videoTag, myMeterElement, body) => {
-  window.setupAudioMeterForMultiview = () => {
-    body.classList.add('show-vu-meter');
-
-    const audioCtx = new window.AudioContext();
-    const sourceNode = audioCtx.createMediaElementSource(videoTag);
-
-    const gainNode = audioCtx.createGain();
-
-    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-
-    sourceNode.connect(gainNode);
-
-    gainNode.connect(audioCtx.destination);
-
-    const meterNode = webAudioPeakMeter.createMeterNode(sourceNode, audioCtx, { peakHoldDuration: 2000 });
-
-    webAudioPeakMeter.createMeter(myMeterElement, meterNode, {});
-
-    audioCtx.resume();
-
-    return (volume) => {
-      gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-
-      if (volume === 0) {
-        body.classList.remove('unmuted');
-        videoTag.classList.remove('unmuted');
-      } else {
-        body.classList.add('unmuted');
-        videoTag.classList.add('unmuted');
-      }
-    };
-  };
-};
 
 const run = async () => {
   if (!Hls.isSupported()) {
