@@ -2,6 +2,7 @@ import {
   createBars,
   createContainerDiv,
   createMasks,
+  createMeterDataMarkup,
   createPeakBars,
   createPeakLabels,
   createTicks,
@@ -12,6 +13,7 @@ import { NodeConfig, defaultNodeConfig, Config, defaultConfig } from './Config';
 import { calculateMaxValues } from './peak-sample';
 import { calculateTPValues } from './true-peak';
 import { findAudioProcBufferSize } from './utils';
+import { appendChild } from '../js/dom';
 
 export function createMeterNode(
   sourceNode: AudioNode,
@@ -69,17 +71,33 @@ export function createMeter(
   // eslint-disable-next-line prefer-object-spread
   const config = { ...defaultConfig, ...options };
 
-  const meterElement = createContainerDiv(domElement, config);
+  const meterElement = createContainerDiv(config);
+
+  appendChild(domElement)(meterElement);
 
   const { channelCount } = meterNode;
 
-  const meterDataFromMarkup = createTicks(meterElement, config);
+  const append = appendChild(meterElement);
 
-  createBars(meterElement, config, meterDataFromMarkup, channelCount);
-  const channelMasks = createMasks(meterElement, config, meterDataFromMarkup, channelCount);
-  const textLabels = createPeakLabels(meterElement, config, meterDataFromMarkup, channelCount);
+  const meterDataFromMarkup = createMeterDataMarkup(meterElement, config);
 
-  const peakBars = createPeakBars(meterElement, config, meterDataFromMarkup, channelCount);
+  createTicks(config, meterDataFromMarkup).map(append);
+
+  createBars(config, meterDataFromMarkup, channelCount).map(append);
+
+  const channelMasks = createMasks(config, meterDataFromMarkup, channelCount);
+
+  channelMasks.map(append);
+
+  console.log('channelMasks', channelMasks);
+
+  const textLabels = createPeakLabels(config, meterDataFromMarkup, channelCount);
+
+  textLabels.map(append);
+
+  const peakBars = createPeakBars(config, meterDataFromMarkup, channelCount);
+
+  peakBars.map(append);
 
   console.log('peakBars', peakBars);
 

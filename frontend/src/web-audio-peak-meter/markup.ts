@@ -17,51 +17,22 @@ export function audioClipPath(db: number, dbRange: number, vertical: boolean): s
   return `inset(0 ${clipPercent}% 0 0)`;
 }
 
-export function createContainerDiv(
-  parent: HTMLElement,
-  { backgroundColor }: { backgroundColor: string },
-): HTMLDivElement {
-  const append = appendChild(parent);
-
-  const meterElement = div([], {
+export const createContainerDiv = ({ backgroundColor }: Config): HTMLDivElement =>
+  div([], {
     style: `position: relative; width: 100%; height: 100%; background-color: ${backgroundColor}`,
   });
 
-  return append(meterElement);
-}
-
-export function createTicks(
+export function createMeterDataMarkup(
   parent: HTMLElement,
-  { vertical, dbRange, dbTickSize, fontSize, borderSize, tickColor }: Config,
+  { vertical, fontSize, borderSize }: Config,
 ): MeterDataMarkup {
-  const append = appendChild(parent);
   const { clientWidth, clientHeight } = parent;
-
-  const numTicks = Math.floor(dbRange / dbTickSize);
-  const tickDivs = Array.from(Array(numTicks).keys()).map((i) =>
-    append(
-      div(`-${dbTickSize * i}`, {
-        'x-kind': 'tick',
-        style: `position: absolute; color: ${tickColor}; text-align: right; font-size: ${fontSize}px;`,
-      }),
-    ),
-  );
 
   if (vertical) {
     const tickWidth = fontSize * 2.0;
-
     const meterTop = fontSize * 1.5 + borderSize;
-    const dbTickTop = fontSize + borderSize;
-
     const meterHeight = clientHeight - meterTop - borderSize;
     const meterWidth = clientWidth - tickWidth - borderSize;
-
-    tickDivs.forEach((tickDiv, i) => {
-      tickDiv.style.width = `${tickWidth}px`;
-      tickDiv.style.top = `calc(${dbTickTop}px + ${(100 / numTicks) * i}%`;
-      tickDiv.style.borderTop = `1px solid ${tickColor}`;
-      tickDiv.style.paddingTop = '5px';
-    });
 
     return {
       vertical,
@@ -76,12 +47,7 @@ export function createTicks(
   const meterHeight = clientHeight - tickWidth - borderSize * 2;
   const meterTop = fontSize * 3;
   const meterWidth = clientWidth - meterTop - borderSize * 2;
-  const tickSpacing = meterWidth / numTicks;
-  tickDivs.forEach((tickDiv, i) => {
-    tickDiv.style.width = `${meterTop}px`;
-    tickDiv.style.bottom = `${borderSize}px`;
-    tickDiv.style.right = `${tickSpacing * i + meterTop}px`;
-  });
+
   return {
     vertical,
     tickWidth,
@@ -91,21 +57,50 @@ export function createTicks(
   };
 }
 
+export function createTicks(
+  { dbRange, dbTickSize, fontSize, borderSize, tickColor }: Config,
+  { vertical, meterWidth, meterTop }: MeterDataMarkup,
+): HTMLDivElement[] {
+  const numTicks = Math.floor(dbRange / dbTickSize);
+  const tickDivs = Array.from(Array(numTicks).keys()).map((i) =>
+    div(`-${dbTickSize * i}`, {
+      'x-kind': 'tick',
+      style: `position: absolute; color: ${tickColor}; text-align: right; font-size: ${fontSize}px;`,
+    }),
+  );
+
+  if (vertical) {
+    const tickWidth = fontSize * 2.0;
+    const dbTickTop = fontSize + borderSize;
+
+    tickDivs.forEach((tickDiv, i) => {
+      tickDiv.style.width = `${tickWidth}px`;
+      tickDiv.style.top = `calc(${dbTickTop}px + ${(100 / numTicks) * i}%`;
+      tickDiv.style.borderTop = `1px solid ${tickColor}`;
+      tickDiv.style.paddingTop = '5px';
+    });
+  } else {
+    const tickSpacing = meterWidth / numTicks;
+    tickDivs.forEach((tickDiv, i) => {
+      tickDiv.style.width = `${meterTop}px`;
+      tickDiv.style.bottom = `${borderSize}px`;
+      tickDiv.style.right = `${tickSpacing * i + meterTop}px`;
+    });
+  }
+
+  return tickDivs;
+}
+
 export function createMasks(
-  parent: HTMLElement,
   { backgroundColor, borderSize, maskTransition }: Config,
   { vertical, meterWidth, meterHeight, meterTop, tickWidth }: MeterDataMarkup,
   channelCount: number,
 ): HTMLDivElement[] {
-  const append = appendChild(parent);
-
   const barDivs = Array.from(Array(channelCount).keys()).map(() =>
-    append(
-      div([], {
-        'x-kind': 'mask',
-        style: `position: absolute; background-color: ${backgroundColor} `,
-      }),
-    ),
+    div([], {
+      'x-kind': 'mask',
+      style: `position: absolute; background-color: ${backgroundColor} `,
+    }),
   );
   if (vertical) {
     barDivs.forEach((barDiv, i) => {
@@ -133,20 +128,15 @@ export function createMasks(
 }
 
 export function createPeakBars(
-  parent: HTMLElement,
   { borderSize, maskTransition }: Config,
   { vertical, meterTop, tickWidth }: MeterDataMarkup,
   channelCount: number,
 ): HTMLDivElement[] {
-  const append = appendChild(parent);
-
   const barDivs = Array.from(Array(channelCount).keys()).map(() =>
-    append(
-      div([], {
-        'x-kind': 'peak-bar',
-        style: `position: absolute; border-bottom: ${borderSize}px solid #ffffff;`,
-      }),
-    ),
+    div([], {
+      'x-kind': 'peak-bar',
+      style: `position: absolute; border-bottom: ${borderSize}px solid #ffffff;`,
+    }),
   );
 
   if (vertical) {
@@ -165,20 +155,15 @@ export function createPeakBars(
 }
 
 export function createBars(
-  parent: HTMLElement,
   { gradient, borderSize }: { gradient: string[]; borderSize: number },
   { vertical, meterWidth, meterHeight, meterTop, tickWidth }: MeterDataMarkup,
   channelCount: number,
 ): HTMLDivElement[] {
-  const append = appendChild(parent);
-
   const barDivs = Array.from(Array(channelCount).keys()).map(() =>
-    append(
-      div([], {
-        'x-kind': 'bar',
-        style: `position: absolute;`,
-      }),
-    ),
+    div([], {
+      'x-kind': 'bar',
+      style: `position: absolute;`,
+    }),
   );
 
   // const initialClipPath = audioClipPath(dbRange, dbRange, vertical);
@@ -213,21 +198,17 @@ export function createBars(
 }
 
 export function createPeakLabels(
-  parent: HTMLElement,
   { borderSize, labelColor, fontSize }: { borderSize: number; labelColor: string; fontSize: number },
   { vertical, meterWidth, meterHeight, tickWidth }: MeterDataMarkup,
   channelCount: number,
 ): HTMLDivElement[] {
-  const append = appendChild(parent);
+  const labelDivs = Array.from(Array(channelCount).keys()).map(() =>
+    div('-∞', {
+      'x-kind': 'peak-label',
+      style: `text-align: center; color: ${labelColor}; font-size: ${fontSize}px; position: absolute;`,
+    }),
+  );
 
-  const labelDivs = Array.from(Array(channelCount).keys()).map(() => {
-    return append(
-      div('-∞', {
-        'x-kind': 'peak-label',
-        style: `text-align: center; color: ${labelColor}; font-size: ${fontSize}px; position: absolute;`,
-      }),
-    );
-  });
   if (vertical) {
     const barWidth = meterWidth / channelCount;
     labelDivs.forEach((label, i) => {
