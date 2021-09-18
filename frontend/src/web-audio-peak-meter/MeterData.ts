@@ -9,10 +9,6 @@ export interface MeterDataMarkup {
 export interface MeterData {
   channelCount: number;
 
-  channelBars: HTMLDivElement[];
-  channelMasks: HTMLDivElement[];
-  textLabels: HTMLDivElement[];
-
   tempPeaks: number[];
   heldPeaks: number[];
   peakHoldTimeouts: (NodeJS.Timeout | null)[];

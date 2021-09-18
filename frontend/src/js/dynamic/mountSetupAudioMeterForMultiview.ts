@@ -61,7 +61,7 @@ export const mountSetupAudioMeterForMultiview = (
 
     const meterNode = createMeterNode(sourceNode, audioCtx);
 
-    createMeter(myMeterElement, meterNode, { peakHoldDuration: 2000, audioMeterStandard: 'true-peak' });
+    createMeter(myMeterElement, meterNode, { peakHoldDuration: 1000, audioMeterStandard: 'peak-sample' });
 
     void audioCtx.resume();
 

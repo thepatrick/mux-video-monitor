@@ -1,4 +1,4 @@
-import { appendChild, div, elm } from '../js/dom';
+import { appendChild, div } from '../js/dom';
 import { Config } from './Config';
 import { MeterData, MeterDataMarkup } from './MeterData';
 import { dbFromFloat } from './utils';
@@ -91,6 +91,81 @@ export function createTicks(
   };
 }
 
+export function createMasks(
+  parent: HTMLElement,
+  { backgroundColor, borderSize, maskTransition }: Config,
+  { vertical, meterWidth, meterHeight, meterTop, tickWidth }: MeterDataMarkup,
+  channelCount: number,
+): HTMLDivElement[] {
+  const append = appendChild(parent);
+
+  const barDivs = Array.from(Array(channelCount).keys()).map(() =>
+    append(
+      div([], {
+        'x-kind': 'mask',
+        style: `position: absolute; background-color: ${backgroundColor} `,
+      }),
+    ),
+  );
+  if (vertical) {
+    barDivs.forEach((barDiv, i) => {
+      barDiv.style.height = `calc(100% - ${meterTop}px)`;
+      barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
+      // barDiv.style.width = `${barWidth}px`;
+      barDiv.style.top = `${meterTop}px`;
+      // barDiv.style.left = `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
+      barDiv.style.left = `calc(((${100 / channelCount}% - (${
+        borderSize * 2 + tickWidth / channelCount
+      }px})) * ${i}) + ${tickWidth + borderSize * (i + 2)}px)`;
+      barDiv.style.transition = `height ${maskTransition}`;
+    });
+  } else {
+    const barWidth = meterHeight / channelCount - borderSize;
+    barDivs.forEach((barDiv, i) => {
+      barDiv.style.height = `${barWidth}px`;
+      barDiv.style.width = `${meterWidth}px`;
+      barDiv.style.top = `${(barWidth + borderSize) * i + borderSize}px`;
+      barDiv.style.right = `${meterTop}px`;
+      barDiv.style.transition = `width ${maskTransition}`;
+    });
+  }
+  return barDivs;
+}
+
+export function createPeakBars(
+  parent: HTMLElement,
+  { borderSize, maskTransition }: Config,
+  { vertical, meterTop, tickWidth }: MeterDataMarkup,
+  channelCount: number,
+): HTMLDivElement[] {
+  const append = appendChild(parent);
+
+  const barDivs = Array.from(Array(channelCount).keys()).map(() =>
+    append(
+      div([], {
+        'x-kind': 'peak-bar',
+        style: `position: absolute; border-bottom: ${borderSize}px solid #ffffff;`,
+      }),
+    ),
+  );
+
+  if (vertical) {
+    barDivs.forEach((barDiv, i) => {
+      barDiv.style.height = `calc(100% - ${meterTop}px)`;
+      barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
+      barDiv.style.top = `${meterTop}px`;
+      barDiv.style.left = `calc(((${100 / channelCount}% - (${
+        borderSize * 2 + tickWidth / channelCount
+      }px})) * ${i}) + ${tickWidth + borderSize * (i + 2)}px)`;
+      barDiv.style.transition = `height ${maskTransition}`;
+
+      // `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
+    });
+  }
+
+  return barDivs;
+}
+
 export function createBars(
   parent: HTMLElement,
   { gradient, borderSize }: { gradient: string[]; borderSize: number },
@@ -134,51 +209,6 @@ export function createBars(
       barDiv.style.backgroundImage = gradientStyle;
       barDiv.style.top = `${(barWidth + borderSize) * i + borderSize}px`;
       barDiv.style.right = `${meterTop}px`;
-    });
-  }
-  return barDivs;
-}
-
-export function createMasks(
-  parent: HTMLElement,
-  {
-    backgroundColor,
-    borderSize,
-    maskTransition,
-  }: { backgroundColor: string; borderSize: number; maskTransition: string },
-  { vertical, meterWidth, meterHeight, meterTop, tickWidth }: MeterDataMarkup,
-  channelCount: number,
-): HTMLDivElement[] {
-  const append = appendChild(parent);
-
-  const barDivs = Array.from(Array(channelCount).keys()).map(() =>
-    append(
-      div([], {
-        'x-kind': 'mask',
-        style: `position: absolute; background-color: ${backgroundColor} `,
-      }),
-    ),
-  );
-  if (vertical) {
-    barDivs.forEach((barDiv, i) => {
-      barDiv.style.height = `calc(100% - ${meterTop}px)`;
-      barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
-      // barDiv.style.width = `${barWidth}px`;
-      barDiv.style.top = `${meterTop}px`;
-      // barDiv.style.left = `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
-      barDiv.style.left = `calc(((${100 / channelCount}% - (${
-        borderSize * 2 + tickWidth / channelCount
-      }px})) * ${i}) + ${tickWidth + borderSize * (i + 2)}px)`;
-      barDiv.style.transition = `height ${maskTransition}`;
-    });
-  } else {
-    const barWidth = meterHeight / channelCount - borderSize;
-    barDivs.forEach((barDiv, i) => {
-      barDiv.style.height = `${barWidth}px`;
-      barDiv.style.width = `${meterWidth}px`;
-      barDiv.style.top = `${(barWidth + borderSize) * i + borderSize}px`;
-      barDiv.style.right = `${meterTop}px`;
-      barDiv.style.transition = `width ${maskTransition}`;
     });
   }
   return barDivs;
@@ -230,10 +260,20 @@ export function maskSize(floatVal: number, dbRange: number, meterDimension: numb
   return numPx;
 }
 
-export function paintMeter(config: { dbRange: number }, meterDataMarkup: MeterDataMarkup, meterData: MeterData): void {
+export function paintMeter(
+  config: { dbRange: number },
+  {
+    channelMasks,
+    textLabels,
+    peakBars,
+  }: { channelMasks: HTMLDivElement[]; textLabels: HTMLDivElement[]; peakBars: HTMLDivElement[] },
+  meterDataMarkup: MeterDataMarkup,
+  meterData: MeterData,
+): void {
   const { dbRange } = config;
   const { meterWidth, vertical, meterTop } = meterDataMarkup;
-  const { tempPeaks, heldPeaks, channelMasks, textLabels } = meterData;
+  const { tempPeaks, heldPeaks } = meterData;
+
   // hopefully some day transition will work for clip path.
   // until then we use a mask div.
   // channelBars.forEach((barDiv, i) => {
@@ -242,6 +282,7 @@ export function paintMeter(config: { dbRange: number }, meterDataMarkup: MeterDa
   //   barDiv.style.clipPath = clipPath;
   //   barDiv.style.WebkitClipPath = clipPath;
   // });
+
   channelMasks.forEach((maskDiv, i) => {
     if (vertical) {
       const channelSize = maskSize(tempPeaks[i], dbRange, 100);
@@ -251,6 +292,7 @@ export function paintMeter(config: { dbRange: number }, meterDataMarkup: MeterDa
       maskDiv.style.width = `${channelSize}px`;
     }
   });
+
   textLabels.forEach((textLabel, i) => {
     if (heldPeaks[i] === 0.0) {
       textLabel.textContent = '-∞';
@@ -259,5 +301,20 @@ export function paintMeter(config: { dbRange: number }, meterDataMarkup: MeterDa
       textLabel.textContent = heldPeak.toFixed(1);
     }
   });
-  window.requestAnimationFrame(() => paintMeter(config, meterDataMarkup, meterData));
+
+  peakBars.forEach((peakBar, i) => {
+    if (heldPeaks[i] === 0.0) {
+      peakBar.setAttribute('x-hold', '-∞');
+    } else {
+      const heldTop = maskSize(heldPeaks[i], dbRange, 100);
+      peakBar.style.height = `calc(${heldTop}% - ${meterTop}px)`;
+
+      const heldPeak = dbFromFloat(heldPeaks[i]);
+      peakBar.setAttribute('x-hold', heldPeak.toFixed(1));
+    }
+  });
+
+  window.requestAnimationFrame(() =>
+    paintMeter(config, { channelMasks, textLabels, peakBars }, meterDataMarkup, meterData),
+  );
 }

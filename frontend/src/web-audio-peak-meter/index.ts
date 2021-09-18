@@ -1,4 +1,12 @@
-import { createBars, createContainerDiv, createMasks, createPeakLabels, createTicks, paintMeter } from './markup';
+import {
+  createBars,
+  createContainerDiv,
+  createMasks,
+  createPeakBars,
+  createPeakLabels,
+  createTicks,
+  paintMeter,
+} from './markup';
 import { MeterData } from './MeterData';
 import { NodeConfig, defaultNodeConfig, Config, defaultConfig } from './Config';
 import { calculateMaxValues } from './peak-sample';
@@ -67,14 +75,19 @@ export function createMeter(
 
   const meterDataFromMarkup = createTicks(meterElement, config);
 
+  createBars(meterElement, config, meterDataFromMarkup, channelCount);
+  const channelMasks = createMasks(meterElement, config, meterDataFromMarkup, channelCount);
+  const textLabels = createPeakLabels(meterElement, config, meterDataFromMarkup, channelCount);
+
+  const peakBars = createPeakBars(meterElement, config, meterDataFromMarkup, channelCount);
+
+  console.log('peakBars', peakBars);
+
   const meterData: MeterData = {
     tempPeaks: new Array<number>(channelCount).fill(0.0),
     heldPeaks: new Array<number>(channelCount).fill(0.0),
     peakHoldTimeouts: new Array<NodeJS.Timeout | null>(channelCount).fill(null),
     channelCount,
-    channelBars: createBars(meterElement, config, meterDataFromMarkup, channelCount),
-    channelMasks: createMasks(meterElement, config, meterDataFromMarkup, channelCount),
-    textLabels: createPeakLabels(meterElement, config, meterDataFromMarkup, channelCount),
 
     lpfCoefficients: [],
     lpfBuffer: [],
@@ -93,5 +106,5 @@ export function createMeter(
     false,
   );
 
-  paintMeter(config, meterDataFromMarkup, meterData);
+  paintMeter(config, { channelMasks, textLabels, peakBars }, meterDataFromMarkup, meterData);
 }
