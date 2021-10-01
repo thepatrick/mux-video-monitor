@@ -1,4 +1,4 @@
-import { appendChild, div } from '../js/dom';
+import { div } from '../js/dom';
 import { Config } from './Config';
 import { MeterData, MeterDataMarkup } from './MeterData';
 import { dbFromFloat } from './utils';
@@ -106,9 +106,7 @@ export function createMasks(
     barDivs.forEach((barDiv, i) => {
       barDiv.style.height = `calc(100% - ${meterTop}px)`;
       barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
-      // barDiv.style.width = `${barWidth}px`;
       barDiv.style.top = `${meterTop}px`;
-      // barDiv.style.left = `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
       barDiv.style.left = `calc(((${100 / channelCount}% - (${
         borderSize * 2 + tickWidth / channelCount
       }px})) * ${i}) + ${tickWidth + borderSize * (i + 2)}px)`;
