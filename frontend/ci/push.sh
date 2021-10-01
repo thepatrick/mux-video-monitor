@@ -16,6 +16,7 @@ end_group
 
 start_group "Building"
 npm run clean
+npm test
 npm run build
 end_group
 
