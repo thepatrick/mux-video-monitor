@@ -4,8 +4,6 @@ set -o errexit -o nounset -o pipefail
 
 cd $(dirname "$0")
 
-export AWS_DEFAULT_REGION=us-east-1
-
 STACK_NAME=mux-video-monitor
 
 aws cloudformation deploy \
