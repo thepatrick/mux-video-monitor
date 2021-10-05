@@ -94,7 +94,7 @@ Resources:
       ProtocolType: HTTP
       Description: !Sub "${AWS::StackName} API"
       Name: !Sub "${AWS::StackName}-api"
-      CorsConfiguration:AppDomain
+      CorsConfiguration:
         AllowCredentials: true
         AllowHeaders:
         - "authorization"
