@@ -8,10 +8,10 @@ Parameters:
     Type: AWS::Route53::HostedZone::Id
   AppDomain:
     Type: String
-  # BackendLambdaS3Bucket:
-  #   Type: String
-  # BackendLambdaS3Key:
-  #   Type: String
+  BackendLambdaS3Bucket:
+    Type: String
+  BackendLambdaS3Key:
+    Type: String
 
 Resources:
   AppCertificate:
@@ -22,6 +22,130 @@ Resources:
         - DomainName: !Sub "${AppDomain}"
           HostedZoneId: !Ref HostedZoneId
       ValidationMethod: "DNS"
+  
+  BackendLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      ManagedPolicyArns: 
+      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+        - Principal:
+            Service: 
+            - "lambda.amazonaws.com"
+          Action:
+          - "sts:AssumeRole"
+          Effect: "Allow"
+  
+  CanReadFromSSM:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "CanReadFromSSM"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Action:
+          - "ssm:GetParameter"
+          - "ssm:GetParameters"
+          Resource:
+          - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/mux/*"
+      Roles:
+      - !Ref "BackendLambdaRole"
+
+  BackendGetStreamFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BackendLambdaS3Bucket
+        S3Key: !Ref BackendLambdaS3Key
+      Handler: src/index.getStream
+      Role: !GetAtt "BackendLambdaRole.Arn"
+      Runtime: "nodejs12.x"
+      Timeout: 25
+
+  BackendAPIRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            Service:
+            - "apigateway.amazonaws.com"
+          Action:
+          - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+      - PolicyName: LambdaAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action: "lambda:*"
+            Resource:
+            - !GetAtt BackendGetStreamFn.Arn
+
+  BackendAPI:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      ProtocolType: HTTP
+      Description: !Sub "${AWS::StackName} API"
+      Name: !Sub "${AWS::StackName}-api"
+      CorsConfiguration:AppDomain
+        AllowCredentials: true
+        AllowHeaders:
+        - "authorization"
+        - "content-type"
+        AllowMethods:
+        - "GET"
+        - "POST"
+        AllowOrigins:
+        - "http://localhost:1234"
+        - "https://nextdayvideo.com"
+        - !Sub "https://${AppDomain}"
+
+  BackendGetStreamIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BackendAPI
+      Description: "Get Stream"
+      ConnectionType: INTERNET
+      CredentialsArn: !GetAtt "BackendAPIRole.Arn"
+      PassthroughBehavior: "WHEN_NO_MATCH"
+      TimeoutInMillis: 29000
+      IntegrationMethod: "POST"
+      IntegrationType: "AWS_PROXY"
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendGetStreamFn.Arn}/invocations"
+
+  BackendGetStreamRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref BackendAPI
+      RouteKey: GET /stream/{muxTokenId}
+      Target: !Sub "integrations/${BackendGetStreamIntegration}"
+
+  BackendAPIDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+    - BackendGetStreamIntegration
+    - BackendGetStreamRoute
+    Properties:
+      Description: !Sub "${AWS::StackName} API Deployment"
+      ApiId: !Ref BackendAPI
+
+  BackendAPIStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      DeploymentId: !Ref BackendAPIDeployment
+      Description: !Sub "${AWS::StackName} API v0"
+      ApiId: !Ref BackendAPI
+      StageName: "api"
+      AutoDeploy: true
+
 
   FrontendWebsite:
     Type: "AWS::S3::Bucket"
@@ -76,22 +200,22 @@ Resources:
           PathPattern: "*.html"
           TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
           ViewerProtocolPolicy: "redirect-to-https"
-        # - AllowedMethods:
-        #   - "GET"
-        #   - "HEAD"
-        #   - "POST"
-        #   - "OPTIONS"
-        #   - "DELETE"
-        #   - "PUT"
-        #   - "PATCH"
-        #   CachedMethods:
-        #   - "GET"
-        #   - "HEAD"
-        #   CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
-        #   Compress: true
-        #   PathPattern: "/api/*"
-        #   TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
-        #   ViewerProtocolPolicy: "redirect-to-https"
+        - AllowedMethods:
+          - "GET"
+          - "HEAD"
+          - "POST"
+          - "OPTIONS"
+          - "DELETE"
+          - "PUT"
+          - "PATCH"
+          CachedMethods:
+          - "GET"
+          - "HEAD"
+          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
+          Compress: true
+          PathPattern: "/api/*"
+          TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
+          ViewerProtocolPolicy: "redirect-to-https"
         DefaultRootObject: "index.html"
         DefaultCacheBehavior:
           AllowedMethods:
@@ -112,15 +236,10 @@ Resources:
             Id: !Sub "${AWS::StackName}-FrontendOrigin"
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${FrontendAccessIdentity}"
-
-        # - CustomOriginConfig:
-        #     OriginProtocolPolicy: "http-only"
-        #   DomainName: !Sub "${FrontendWebsite}.s3-website-${AWS::Region}.amazonaws.com"
-        #   Id: !Sub "${AWS::StackName}-FrontendOrigin"
-        # - CustomOriginConfig:
-        #     OriginProtocolPolicy: "https-only"
-        #   DomainName: !Sub ${BackendAPI}.execute-api.${AWS::Region}.amazonaws.com
-        #   Id: !Sub "${AWS::StackName}-BackendOrigin"
+          - CustomOriginConfig:
+              OriginProtocolPolicy: "https-only"
+            DomainName: !Sub ${BackendAPI}.execute-api.${AWS::Region}.amazonaws.com
+            Id: !Sub "${AWS::StackName}-BackendOrigin"
         PriceClass: 'PriceClass_All'
         ViewerCertificate:
           AcmCertificateArn: !Ref "AppCertificate"
