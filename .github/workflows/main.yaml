@@ -11,6 +11,77 @@ env:
   APP_DOMAIN: mux-monitor.aws.nextdayvideo.com.au
 
 jobs:
+  deploy-backend-bucket:
+    name: Deploy backend-bucket.cfn.yaml
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      backendBucket: ${{ steps.deploy-bucket.outputs.backendBucket }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - run: sleep 5 # there's still a race condition for now
+
+      - name: Configure AWS
+        run: ./ci/configure-aws.sh
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2 # default
+          verbose: false # default
+          
+      - name: Deploy backend-bucket.cfn.yaml
+        id: deploy-bucket
+        run: |
+          ./infra/backend-bucket/deploy.sh
+
+  build-backend-lambda:
+    name: Build backend-lambda and push to S3
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    needs: deploy-backend-bucket
+    
+    outputs:
+      bucket: ${{ steps.build-and-push.outputs.bucket }}
+      object: ${{ steps.build-and-push.outputs.object }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+          
+      - run: sleep 5 # there's still a race condition for now
+
+      - name: Configure AWS
+        run: ./ci/configure-aws.sh
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2 # default
+          verbose: false # default
+
+      - name: Build and push to S3
+        id: build-and-push
+        env:
+          LAMBDA_BUCKET: ${{needs.deploy-backend-bucket.outputs.backendBucket}}
+        run: |
+          ./backend-lambda/ci/pr.sh
+
   deploy-backend:
     name: Deploy Backend
     runs-on: ubuntu-latest
@@ -18,6 +89,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    
+    need:
+      - build-backend-lambda
 
     outputs:
       frontendBucket: ${{ steps.deploy.outputs.frontendBucket }}
@@ -39,9 +113,11 @@ jobs:
           
       - name: Deploy deployment.cfn.yaml
         id: deploy
+        env:
+          BACKEND_LAMBDA_S3_BUCKET: ${{needs.build-backend-lambda.outputs.bucket}}
+          BACKEND_LAMBDA_S3_KEY: ${{needs.build-backend-lambda.outputs.object}}
         run: |
-          cd infra
-          ./deploy.sh
+          ./infra/main-stack/deploy.sh
 
   build-frontend:
     name: Build frontend and push to S3

@@ -1,0 +1,14 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Creates a bucket to store the mux-video-monitor lambda"
+
+Resources:
+  BackendBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: "Private"
+
+Outputs:
+  BackendBucket:
+    Value: !Ref "BackendBucket"
