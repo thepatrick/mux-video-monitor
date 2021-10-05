@@ -2,7 +2,7 @@
 
 set -o errexit -o nounset -o pipefail
 
-cd $(dirname "$0")/..
+cd $(dirname "$0")
 
 export AWS_DEFAULT_REGION=ap-southeast-2
 
