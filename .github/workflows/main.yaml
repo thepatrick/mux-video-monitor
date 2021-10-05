@@ -90,7 +90,7 @@ jobs:
       id-token: write
       contents: read
     
-    need:
+    needs:
       - build-backend-lambda
 
     outputs:
