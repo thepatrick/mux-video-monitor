@@ -1,0 +1,49 @@
+{
+  "name": "s3-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "ts-auto-guard --debug && tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run compile",
+    "start": "node dist/src/index.js",
+    "lint": "eslint --ext .ts ./",
+    "build": "npm run clean && npm run compile && npm run build.prepare && npm run build.zip",
+    "build.prepare": "del-cli dist/test && cp package.json package-lock.json dist && cd dist && npm ci --only=production && cd ..",
+    "build.zip": "cd dist && bestzip ../build.zip . && cd ..",
+    "clean": "del-cli dist build.zip"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mux/mux-node": "^3.1.1",
+    "aws-sdk": "^2.819.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.68",
+    "@types/cors": "^2.8.9",
+    "@types/express": "^4.17.9",
+    "@types/jest": "^27.0.2",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/node-fetch": "^2.5.7",
+    "@types/ramda": "^0.27.34",
+    "@typescript-eslint/eslint-plugin": "^4.11.1",
+    "@typescript-eslint/parser": "^4.11.1",
+    "bestzip": "^2.1.7",
+    "del-cli": "^3.0.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jest": "^24.5.0",
+    "eslint-plugin-prettier": "^3.3.0",
+    "jest": "^27.2.4",
+    "prettier": "^2.4.1",
+    "ts-auto-guard": "^1.0.0-alpha.12",
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.1.3"
+  }
+}
