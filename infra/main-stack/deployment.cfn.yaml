@@ -49,6 +49,8 @@ Resources:
           Action:
           - "ssm:GetParameter"
           - "ssm:GetParameters"
+          - "ssm:GetParametersByPath"
+          - "ssm:ListTagsForResource"
           Resource:
           - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/mux/*"
       Roles:
@@ -62,7 +64,18 @@ Resources:
         S3Key: !Ref BackendLambdaS3Key
       Handler: src/index.getStream
       Role: !GetAtt "BackendLambdaRole.Arn"
-      Runtime: "nodejs12.x"
+      Runtime: "nodejs14.x"
+      Timeout: 25
+  
+  BackendListRoomsFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BackendLambdaS3Bucket
+        S3Key: !Ref BackendLambdaS3Key
+      Handler: src/index.listRooms
+      Role: !GetAtt "BackendLambdaRole.Arn"
+      Runtime: "nodejs14.x"
       Timeout: 25
 
   BackendAPIRole:
@@ -87,6 +100,7 @@ Resources:
             Action: "lambda:*"
             Resource:
             - !GetAtt BackendGetStreamFn.Arn
+            - !GetAtt BackendListRoomsFn.Arn
 
   BackendAPI:
     Type: AWS::ApiGatewayV2::Api
@@ -127,12 +141,35 @@ Resources:
       ApiId: !Ref BackendAPI
       RouteKey: GET /stream/{muxTokenId}
       Target: !Sub "integrations/${BackendGetStreamIntegration}"
+  
+  BackendListRoomsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BackendAPI
+      Description: "List Rooms"
+      ConnectionType: INTERNET
+      CredentialsArn: !GetAtt "BackendAPIRole.Arn"
+      PassthroughBehavior: "WHEN_NO_MATCH"
+      TimeoutInMillis: 29000
+      IntegrationMethod: "POST"
+      IntegrationType: "AWS_PROXY"
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendListRoomsFn.Arn}/invocations"
+
+  BackendListRoomsRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref BackendAPI
+      RouteKey: GET /stream/
+      Target: !Sub "integrations/${BackendListRoomsIntegration}"
 
   BackendAPIDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
     - BackendGetStreamIntegration
     - BackendGetStreamRoute
+    - BackendListRoomsRoute
+    - BackendListRoomsIntegration
     Properties:
       Description: !Sub "${AWS::StackName} API Deployment"
       ApiId: !Ref BackendAPI
@@ -145,7 +182,6 @@ Resources:
       ApiId: !Ref BackendAPI
       StageName: "api"
       AutoDeploy: true
-
 
   FrontendWebsite:
     Type: "AWS::S3::Bucket"
