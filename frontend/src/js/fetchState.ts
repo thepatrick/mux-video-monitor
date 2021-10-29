@@ -20,7 +20,7 @@ export const fetchState = async (
 ): Promise<MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError> => {
   try {
     const before = Date.now();
-    const fetchResponse = await fetch(`/api/stream/${encodeURIComponent(id)}.json`);
+    const fetchResponse = await fetch(`/api/stream/${encodeURIComponent(id)}`);
 
     // TODO: Validate state
     const state = (await fetchResponse.json()) as MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError;
