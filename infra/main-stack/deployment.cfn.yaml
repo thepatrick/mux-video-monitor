@@ -160,7 +160,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref BackendAPI
-      RouteKey: GET /stream/
+      RouteKey: GET /stream
       Target: !Sub "integrations/${BackendListRoomsIntegration}"
 
   BackendAPIDeployment:
