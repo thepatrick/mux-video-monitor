@@ -26,18 +26,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        
-      - run: sleep 5 # there's still a race condition for now
 
-      - name: Configure AWS
-        run: ./ci/configure-aws.sh
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
+          role-session-name: mux-video-monitor/deploy-backend-bucket
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
         with:
           version: 2 # default
           verbose: false # default
-          
+
       - name: Deploy backend-bucket.cfn.yaml
         id: deploy-bucket
         run: |
@@ -52,7 +54,7 @@ jobs:
       contents: read
 
     needs: deploy-backend-bucket
-    
+
     outputs:
       bucket: ${{ steps.build-and-push.outputs.bucket }}
       object: ${{ steps.build-and-push.outputs.object }}
@@ -60,11 +62,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-          
-      - run: sleep 5 # there's still a race condition for now
 
-      - name: Configure AWS
-        run: ./ci/configure-aws.sh
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
+          role-session-name: mux-video-monitor/build-backend-lambda
 
       - uses: actions/setup-node@v2
         with:
@@ -90,7 +94,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     needs:
       - build-backend-lambda
 
@@ -100,18 +104,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        
-      - run: sleep 5 # there's still a race condition for now
 
-      - name: Configure AWS
-        run: ./ci/configure-aws.sh
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
+          role-session-name: mux-video-monitor/deploy-backend
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
         with:
           version: 2 # default
           verbose: false # default
-          
+
       - name: Deploy deployment.cfn.yaml
         id: deploy
         env:
@@ -136,11 +142,13 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-        
-      - run: sleep 5 # there's still a race condition for now
 
-      - name: Configure AWS
-        run: ./ci/configure-aws.sh
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
+          role-session-name: mux-video-monitor/build-frontend
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
