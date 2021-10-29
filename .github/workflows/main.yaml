@@ -32,7 +32,7 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
-          role-session-name: mux-video-monitor-deploy-backend-bucket
+          role-session-name: mux-video-monitor
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -68,7 +68,7 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
-          role-session-name: mux-video-monitor-build-backend-lambda
+          role-session-name: mux-video-monitor
 
       - uses: actions/setup-node@v2
         with:
@@ -110,7 +110,7 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
-          role-session-name: mux-video-monitor-deploy-backend
+          role-session-name: mux-video-monitor
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -148,7 +148,7 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_MERGE_ROLE }}
-          role-session-name: mux-video-monitor-build-frontend
+          role-session-name: mux-video-monitor
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
