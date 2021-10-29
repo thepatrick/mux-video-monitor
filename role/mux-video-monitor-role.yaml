@@ -21,7 +21,6 @@ Resources:
               Federated: !Ref OIDCProviderArn
             Condition:
               StringLike:
-                "token.actions.githubusercontent.com:aud": "https://github.com/thepatrick"
                 "token.actions.githubusercontent.com:sub": !Sub repo:${RepoName}:ref:refs/heads/main
 
 Outputs:
