@@ -15,7 +15,7 @@ const roomTagsQueue = new PQueue({ concurrency: 4 });
 type RoomTag = Record<string, string>;
 interface RoomWithTags {
   id: string;
-  tags: RoomTag[];
+  tags: RoomTag;
 }
 
 const getRoomWithTags = async (ssm: SSM, id: string): Promise<Result<Error, RoomWithTags>> => {
@@ -35,7 +35,7 @@ const getRoomWithTags = async (ssm: SSM, id: string): Promise<Result<Error, Room
       ...prev,
       [Key]: Value,
     }),
-    {} as RoomTag[],
+    {} as RoomTag,
   );
 
   return success({ id, tags });
@@ -44,11 +44,9 @@ const getRoomWithTags = async (ssm: SSM, id: string): Promise<Result<Error, Room
 const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
   const ssm = new SSM();
 
-  const { Parameters /*, NextToken */ } = await ssm
-    .getParametersByPath({
-      Path: '/multiview/mux/',
-    })
-    .promise();
+  const path = '/multiview/mux/';
+
+  const { Parameters /*, NextToken */ } = await ssm.getParametersByPath({ Path: path }).promise();
 
   if (Parameters == null) {
     return failure(new Error('Unexpected AWS response'));
@@ -61,7 +59,7 @@ const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
   const maybeRooms = await Promise.all(eventuallyNames);
 
   const errors = maybeRooms.filter(isFailure).map(({ value }) => value);
- 
+
   if (errors.length > 0) {
     return failure(new Error(`${errors.length} errors fetching tags. ${errors.map((e) => e.message).join(', ')}`));
   }
@@ -70,7 +68,11 @@ const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
   //   // maybe get more
   // }
 
-  const rooms = maybeRooms.filter(isSuccess).map(({ value }) => value);
+  const rooms = maybeRooms
+    .filter(isSuccess)
+    .map(({ value }) => value)
+    .filter(({ tags }) => tags.showInMultiview === 'true')
+    .map(({ id, tags }) => ({ id: id.substr(path.length), tags }));
 
   return success(rooms);
 };
