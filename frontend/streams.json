@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "rooms": [
+    {
+      "id": "online",
+      "tags": { "multiview:title": "Online", "multiview:show": "true" }
+    },
+    {
+      "id": "offline",
+      "tags": { "multiview:title": "Offline", "multiview:show": "true" }
+    }
+  ]
+}
