@@ -46,7 +46,7 @@ const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
 
   const path = '/multiview/mux/';
 
-  const { Parameters /*, NextToken */ } = await ssm.getParametersByPath({ Path: path }).promise();
+  const { Parameters } = await ssm.getParametersByPath({ Path: path }).promise();
 
   if (Parameters == null) {
     return failure(new Error('Unexpected AWS response'));
@@ -63,10 +63,6 @@ const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
   if (errors.length > 0) {
     return failure(new Error(`${errors.length} errors fetching tags. ${errors.map((e) => e.message).join(', ')}`));
   }
-
-  // if (NextToken != null) {
-  //   // maybe get more
-  // }
 
   const rooms = maybeRooms
     .filter(isSuccess)
