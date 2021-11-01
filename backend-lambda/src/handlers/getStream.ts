@@ -2,11 +2,11 @@ import Mux from '@mux/mux-node';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { SSM } from 'aws-sdk';
 import { notFound, response } from '../helpers/response';
+import { failure, isFailure, Result, success } from '../helpers/result';
 import { catchErrors } from './catchErrors';
+import { getRoomWithTags } from './getRoomWithTags';
 
-const maybeGetMuxTokenSecret = async (muxTokenId: string) => {
-  const ssm = new SSM();
-
+const maybeGetMuxTokenSecret = async (ssm: SSM, muxTokenId: string): Promise<Result<Error, string>> => {
   try {
     const muxTokenSecretParameter = await ssm
       .getParameter({ Name: `/multiview/mux/${muxTokenId}`, WithDecryption: true })
@@ -14,11 +14,15 @@ const maybeGetMuxTokenSecret = async (muxTokenId: string) => {
 
     const muxTokenSecret = muxTokenSecretParameter.Parameter?.Value;
 
-    return muxTokenSecret;
+    if (muxTokenSecret !== undefined) {
+      return success(muxTokenSecret);
+    }
+
+    return failure(new Error('No secret found'));
   } catch (err) {
     console.log(`Error fetching secret ${muxTokenId}: ${(err as Error).message}`, err);
 
-    return undefined;
+    return failure(new Error('No secret found'));
   }
 };
 
@@ -29,12 +33,43 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     return notFound();
   }
 
-  const muxTokenSecret = await maybeGetMuxTokenSecret(muxTokenId);
+  const ssm = new SSM();
 
-  if (!muxTokenSecret) {
+  const maybeMuxTokenSecret = await maybeGetMuxTokenSecret(ssm, muxTokenId);
+
+  if (isFailure(maybeMuxTokenSecret)) {
     console.log('No secret found for ' + muxTokenId);
     return notFound();
   }
+
+  const maybeGetTags = await getRoomWithTags(ssm, muxTokenId);
+
+  if (isFailure(maybeGetTags)) {
+    console.log('No tags found for ' + muxTokenId);
+    return notFound();
+  }
+
+  const { tags } = maybeGetTags.value;
+
+  const title = tags['multiview:title'] || muxTokenId;
+
+  if (tags['multiview:demo'] === 'offline') {
+    return response({
+      ok: true,
+      online: false,
+      stream: undefined,
+      title,
+    });
+  } else if (tags['multiview:demo'] === 'fake-stream') {
+    return response({
+      ok: true,
+      online: true,
+      stream: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+      title,
+    });
+  }
+
+  const muxTokenSecret = maybeMuxTokenSecret.value;
 
   const { Video } = new Mux(muxTokenId, muxTokenSecret);
 
@@ -51,6 +86,7 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
       ok: true,
       online: false,
       stream: undefined,
+      title,
     });
   }
 
@@ -62,6 +98,7 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
       ok: true,
       online: false,
       stream: undefined,
+      title,
     });
   }
 
@@ -72,5 +109,6 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     ok: true,
     online: true,
     stream: streamURL,
+    title,
   });
 });
