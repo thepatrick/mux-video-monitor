@@ -42,7 +42,7 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     return notFound();
   }
 
-  const maybeGetTags = await getRoomWithTags(ssm, muxTokenId);
+  const maybeGetTags = await getRoomWithTags(ssm, `/multiview/mux/${muxTokenId}`);
 
   if (isFailure(maybeGetTags)) {
     console.log('No tags found for ' + muxTokenId);
