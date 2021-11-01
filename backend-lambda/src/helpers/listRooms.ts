@@ -1,45 +1,17 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { SSM } from 'aws-sdk';
 import PQueue from 'p-queue';
-import { response } from '../helpers/response';
+import { response } from './response';
 
-import { failure, isFailure, isSuccess, Result, success } from '../helpers/result';
-import { catchErrors } from './catchErrors';
+import { failure, isFailure, isSuccess, Result, success } from './result';
+import { catchErrors } from '../handlers/catchErrors';
+import { getRoomWithTags, RoomWithTags } from '../handlers/getRoomWithTags';
 
 const notUndefined = <T>(input: T | undefined): input is T => {
   return input !== undefined;
 };
 
 const roomTagsQueue = new PQueue({ concurrency: 4 });
-
-type RoomTag = Record<string, string>;
-interface RoomWithTags {
-  id: string;
-  tags: RoomTag;
-}
-
-const getRoomWithTags = async (ssm: SSM, id: string): Promise<Result<Error, RoomWithTags>> => {
-  const { TagList } = await ssm
-    .listTagsForResource({
-      ResourceId: id,
-      ResourceType: 'Parameter',
-    })
-    .promise();
-
-  if (TagList == null) {
-    return failure(new Error('Unexpected AWS response'));
-  }
-
-  const tags = TagList.reduce(
-    (prev, { Key, Value }) => ({
-      ...prev,
-      [Key]: Value,
-    }),
-    {} as RoomTag,
-  );
-
-  return success({ id, tags });
-};
 
 const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
   const ssm = new SSM();
