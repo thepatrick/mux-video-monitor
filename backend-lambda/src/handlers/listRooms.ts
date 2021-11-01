@@ -67,7 +67,7 @@ const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
   const rooms = maybeRooms
     .filter(isSuccess)
     .map(({ value }) => value)
-    .filter(({ tags }) => tags.showInMultiview === 'true')
+    .filter(({ tags }) => tags['multiview:show'] === 'true')
     .map(({ id, tags }) => ({ id: id.substr(path.length), tags }));
 
   return success(rooms);
