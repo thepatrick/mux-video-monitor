@@ -17,7 +17,7 @@ interface FetchRoomsError {
 
 interface FetchRoomsResponseRoom {
   id: string;
-  tags: Record<string, string>;
+  title: string;
 }
 
 interface FetchRoomsResponseOk {
@@ -42,7 +42,7 @@ export const fetchRooms = async (): Promise<FetchRoomsOk | FetchRoomsError> => {
 
     const r = rooms.rooms.map((room) => ({
       id: room.id,
-      name: room.tags['multiview:title'] || room.id,
+      name: room.title,
     }));
 
     const totalTime = Date.now() - before;

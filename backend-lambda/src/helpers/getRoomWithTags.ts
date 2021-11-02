@@ -1,5 +1,5 @@
 import { SSM } from 'aws-sdk';
-import { failure, Result, success } from '../helpers/result';
+import { failure, Result, success } from './result';
 
 export type RoomTag = Record<string, string>;
 export interface RoomWithTags {
