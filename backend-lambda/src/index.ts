@@ -1,2 +1,2 @@
 export { getStream } from './handlers/getStream';
-export { listRooms } from './helpers/listRooms';
+export { listRooms } from './handlers/listRooms';

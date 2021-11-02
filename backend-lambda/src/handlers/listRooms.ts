@@ -1,11 +1,11 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { SSM } from 'aws-sdk';
 import PQueue from 'p-queue';
-import { response } from './response';
+import { response } from '../helpers/response';
 
-import { failure, isFailure, isSuccess, Result, success } from './result';
-import { catchErrors } from '../handlers/catchErrors';
-import { getRoomWithTags, RoomWithTags } from '../handlers/getRoomWithTags';
+import { failure, isFailure, isSuccess, Result, success, successValue } from '../helpers/result';
+import { catchErrors } from './catchErrors';
+import { getRoomWithTags } from '../helpers/getRoomWithTags';
 
 const notUndefined = <T>(input: T | undefined): input is T => {
   return input !== undefined;
@@ -13,7 +13,7 @@ const notUndefined = <T>(input: T | undefined): input is T => {
 
 const roomTagsQueue = new PQueue({ concurrency: 4 });
 
-const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
+const getRooms = async (): Promise<Result<Error, { id: string, title: string }[]>> => {
   const ssm = new SSM();
 
   const path = '/multiview/mux/';
@@ -38,9 +38,9 @@ const getRooms = async (): Promise<Result<Error, RoomWithTags[]>> => {
 
   const rooms = maybeRooms
     .filter(isSuccess)
-    .map(({ value }) => value)
+    .map(successValue)
     .filter(({ tags }) => tags['multiview:show'] === 'true')
-    .map(({ id, tags }) => ({ id: id.substr(path.length), tags }));
+    .map(({ id, tags }) => ({ id: id.substr(path.length), title: tags['multiview:title'] }));
 
   return success(rooms);
 };

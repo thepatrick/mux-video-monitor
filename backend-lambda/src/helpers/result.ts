@@ -12,3 +12,5 @@ export const isFailure = <Failure, Success>(value: Result<Failure, Success>): va
 
 export const isSuccess = <Failure, Success>(value: Result<Failure, Success>): value is SuccessT<Success> =>
   value.ok === true;
+
+export const successValue = <T>(input: SuccessT<T>): T => input.value;

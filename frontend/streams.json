@@ -3,11 +3,11 @@
   "rooms": [
     {
       "id": "online",
-      "tags": { "multiview:title": "Online", "multiview:show": "true" }
+      "title": "Online"
     },
     {
       "id": "offline",
-      "tags": { "multiview:title": "Offline", "multiview:show": "true" }
+      "title": "Offline"
     }
   ]
 }
