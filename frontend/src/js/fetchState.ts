@@ -1,12 +1,16 @@
+import { nanoid } from 'nanoid';
+
 interface MuxStreamStateOnline {
   ok: true;
   online: true;
   stream: string;
+  title: string;
 }
 
 interface MuxStreamStateOffline {
   ok: true;
   online: false;
+  title: string;
 }
 
 interface MuxStreamStateError {
@@ -15,19 +19,18 @@ interface MuxStreamStateError {
 }
 
 export const fetchState = async (
-  displayName: string,
   id: string,
 ): Promise<MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError> => {
   try {
     const before = Date.now();
-    const fetchResponse = await fetch(`/api/stream/${encodeURIComponent(id)}`);
+    const fetchResponse = await fetch(`/api/stream/${encodeURIComponent(id)}?${nanoid()}`);
 
     // TODO: Validate state
     const state = (await fetchResponse.json()) as MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError;
 
     const totalTime = Date.now() - before;
 
-    console.log(`[${displayName}] Got state in ${totalTime}ms`, state);
+    console.log(`[${id}] Got state in ${totalTime}ms`, state);
 
     return state;
   } catch (err) {
