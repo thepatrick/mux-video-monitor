@@ -1,5 +1,4 @@
 import { createSetTitleLabel } from './dynamic/createSetTitleLabel';
-import { fetchRooms } from './fetchRooms';
 import { fetchState } from './fetchState';
 import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeterForMultiview';
 import { wait } from './wait';
@@ -42,33 +41,19 @@ const run = async () => {
     void video.play();
   });
 
-  const roomsResponse = await fetchRooms();
-
-  if (roomsResponse.ok === false) {
-    alert(roomsResponse.error);
-    return;
-  }
-
-  const { rooms } = roomsResponse;
-
   const id = params.get('id');
   if (!id) {
     throw new Error('ID not set');
   }
 
-  const { name: displayName } = rooms.find(({ id: roomId }) => roomId === id) ?? {};
+  const setTitleLabel = createSetTitleLabel(roomNameEl);
 
-  if (!displayName) {
-    throw new Error('Room not found');
-  }
-
-  const setTitleLabel = createSetTitleLabel(roomNameEl, displayName);
-
+  let currentRoomName = id;
   let currentStreamURL;
 
   const showError = (message: string) => {
     offlineEl.style.display = '';
-    offlineEl.querySelector('small').textContent = `${displayName}: ${message}`;
+    offlineEl.querySelector('small').textContent = `${currentRoomName}: ${message}`;
     video.style.display = 'none';
   };
 
@@ -90,17 +75,19 @@ const run = async () => {
     }
     refreshingFromState = true;
 
-    setTitleLabel({ loading: true });
+    setTitleLabel({ loading: true, room: currentRoomName });
 
-    const state = await fetchState(displayName, id);
+    const state = await fetchState(id);
 
     if (state.ok === false) {
-      setTitleLabel({ error: state.error });
+      setTitleLabel({ error: state.error, room: currentRoomName });
       refreshingFromState = false;
       return;
     }
 
-    setTitleLabel({ live: state.online });
+    currentRoomName = state.title;
+
+    setTitleLabel({ live: state.online, room: currentRoomName });
 
     if (state.online === true) {
       video.style.display = '';
@@ -204,7 +191,7 @@ const run = async () => {
 
     const offset = 30000 + (Math.round(Math.random() * 10000) - 5000);
 
-    console.log(`[${displayName}] Next in ${offset}ms`);
+    console.log(`[${id}] Next in ${offset}ms`);
 
     await wait(offset);
     // eslint-disable-next-line no-constant-condition
