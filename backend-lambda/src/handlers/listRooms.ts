@@ -55,7 +55,7 @@ const getRooms = async (): Promise<Result<Error, { id: string, title: string }[]
     .map(successValue)
     .filter(({ tags }) => tags['multiview:show'] === 'true')
     .map(({ id, tags }, index) => ({ id: id.substr(path.length), title: tags['multiview:title'], order: getOrderFromTag(tags['multiview:order'], index) }))
-    .sort(({ order: firstOrder }, { order: secondOrder }) => secondOrder - firstOrder);
+    .sort(({ order: firstOrder }, { order: secondOrder }) => firstOrder - secondOrder);
 
   return success(rooms);
 };
