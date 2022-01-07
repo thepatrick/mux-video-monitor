@@ -13,6 +13,20 @@ const notUndefined = <T>(input: T | undefined): input is T => {
 
 const roomTagsQueue = new PQueue({ concurrency: 4 });
 
+const getOrderFromTag = (tagValue: string | undefined, defaultValue: number) => {
+  if (tagValue === undefined) {
+    return defaultValue;
+  }
+
+  const tagNumber = parseInt(tagValue, 10);
+
+  if (isNaN(tagNumber)) {
+    return defaultValue;
+  }
+
+  return tagNumber;
+}
+
 const getRooms = async (): Promise<Result<Error, { id: string, title: string }[]>> => {
   const ssm = new SSM();
 
@@ -40,7 +54,8 @@ const getRooms = async (): Promise<Result<Error, { id: string, title: string }[]
     .filter(isSuccess)
     .map(successValue)
     .filter(({ tags }) => tags['multiview:show'] === 'true')
-    .map(({ id, tags }) => ({ id: id.substr(path.length), title: tags['multiview:title'] }));
+    .map(({ id, tags }, index) => ({ id: id.substr(path.length), title: tags['multiview:title'], order: getOrderFromTag(tags['multiview:order'], index) }))
+    .sort(({ order: firstOrder }, { order: secondOrder }) => secondOrder - firstOrder);
 
   return success(rooms);
 };
