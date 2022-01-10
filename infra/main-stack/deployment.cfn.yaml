@@ -53,6 +53,22 @@ Resources:
           - "sts:AssumeRole"
           Effect: "Allow"
   
+  CanPopulateDynamoCache:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "CanPopulateDynamoCache"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Action:
+          - "dynamodb:Get*"
+          - "dynamodb:Put*"
+          Resource:
+          - !GetAtt "CacheTable.Arn"
+      Roles:
+      - !Ref "BackendLambdaRole"
+
   CanReadFromSSM:
     Type: "AWS::IAM::Policy"
     Properties:
