@@ -8,13 +8,15 @@ export const getDynamoCacheDocument = async <T>(
   key: string,
 ): Promise<Result<Error, T | undefined>> => {
   try {
+    const getItemKey = DynamoDB.Converter.marshall({
+      CacheKind: kind,
+      CacheKey: key,
+    });
+
     const { Item } = await dynamo
       .getItem({
         TableName: tableName,
-        Key: DynamoDB.Converter.marshall({
-          CacheKind: kind,
-          CacheKey: key,
-        }),
+        Key: getItemKey,
       })
       .promise();
 
