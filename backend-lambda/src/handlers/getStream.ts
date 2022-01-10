@@ -1,114 +1,45 @@
-import Mux from '@mux/mux-node';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { SSM } from 'aws-sdk';
 import { notFound, response } from '../helpers/response';
-import { failure, isFailure, Result, success } from '../helpers/result';
+import { isFailure, successValue } from '../helpers/result';
 import { catchErrors } from '../helpers/catchErrors';
-import { getRoomWithTags } from './rooms/getRoomWithTags';
-
-const maybeGetMuxTokenSecret = async (ssm: SSM, muxTokenId: string): Promise<Result<Error, string>> => {
-  try {
-    const muxTokenSecretParameter = await ssm
-      .getParameter({ Name: `/multiview/mux/${muxTokenId}`, WithDecryption: true })
-      .promise();
-
-    const muxTokenSecret = muxTokenSecretParameter.Parameter?.Value;
-
-    if (muxTokenSecret !== undefined) {
-      return success(muxTokenSecret);
-    }
-
-    return failure(new Error('No secret found'));
-  } catch (err) {
-    console.log(`Error fetching secret ${muxTokenId}: ${(err as Error).message}`, err);
-
-    return failure(new Error('No secret found'));
-  }
-};
+import { getStreamStateFromDynamo } from "./mux/getStreamStateFromDynamo";
+import { TableName } from './listRooms';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, context) => {
+  if (!TableName) {
+    throw new Error('CACHE_TABLE_NAME not set');
+  }
+
   const muxTokenId = event.pathParameters?.muxTokenId;
   if (muxTokenId === undefined || muxTokenId.length === 0) {
     return notFound();
   }
 
-  const ssm = new SSM();
+  const maybeState = await getStreamStateFromDynamo(TableName, muxTokenId, false);
 
-  const maybeMuxTokenSecret = await maybeGetMuxTokenSecret(ssm, muxTokenId);
-
-  if (isFailure(maybeMuxTokenSecret)) {
-    console.log('No secret found for ' + muxTokenId);
+  if (isFailure(maybeState)) {
     return notFound();
   }
 
-  const maybeGetTags = await getRoomWithTags(ssm, `/multiview/mux/${muxTokenId}`);
-
-  if (isFailure(maybeGetTags)) {
-    console.log('No tags found for ' + muxTokenId);
-    return notFound();
-  }
-
-  const { tags } = maybeGetTags.value;
-
-  const title = tags['multiview:title'] || muxTokenId;
-
-  if (tags['multiview:demo'] === 'offline') {
-    return response({
-      ok: true,
-      online: false,
-      stream: undefined,
-      title,
-    });
-  } else if (tags['multiview:demo'] === 'fake-stream') {
-    return response({
-      ok: true,
-      online: true,
-      stream: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-      title,
-    });
-  }
-
-  const muxTokenSecret = maybeMuxTokenSecret.value;
-
-  const { Video } = new Mux(muxTokenId, muxTokenSecret);
-
-  const streams = await Video.LiveStreams.list({ limit: 10, page: 0 });
-
-  const stream = streams.find(({ status }) => status === 'active');
-
-  if (!stream) {
-    console.log(
-      'No active stream found',
-      streams.map((st) => ({ status: st.status, id: st.id })),
-    );
-    return response({
-      ok: true,
-      online: false,
-      stream: undefined,
-      title,
-    });
-  }
-
-  const playbackId = stream.playback_ids?.[0]?.id;
-
-  if (!playbackId) {
-    console.log(`No playback ID found for ${muxTokenId}`, stream.playback_ids);
-    return response({
-      ok: true,
-      online: false,
-      stream: undefined,
-      title,
-    });
-  }
-
-  const streamURL = `https://stream.mux.com/${encodeURIComponent(playbackId)}.m3u8`;
-  console.log('streamURL', streamURL);
+  const state = successValue(maybeState);
 
   return response({
     ok: true,
-    online: true,
-    stream: streamURL,
-    title,
+    online: state.state === 'active',
+    stream: state.state === 'active' && state.streamURL,
+    title: state.title,
   });
 });
+
+if (process.env.TEST_HANDLER === 'getStream') {
+  if (!TableName) {
+    throw new Error('CACHE_TABLE_NAME not set');
+  }
+
+  console.log('Ok, lets do this');
+  getStreamStateFromDynamo(TableName, process.env.ROOM_ID || '', false).then(
+      (results) => console.log('[DONE]', results),
+      (err) => console.log('[ERROR]', err),
+    );
+}
