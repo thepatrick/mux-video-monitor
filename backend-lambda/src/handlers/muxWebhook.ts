@@ -5,9 +5,6 @@ import { TableName } from './listRooms';
 import { isMuxWebhookBody } from '../types.guard';
 import { parseBody } from '../helpers/parseBody';
 import { isFailure, successValue } from '../helpers/result';
-import { DynamoDB, SSM } from 'aws-sdk';
-import { makeGetStreamStateFromSSMAndMux } from './mux/makeGetStreamStateFromSSMAndMux';
-import { makeRefreshStreamState } from './mux/refreshStreamState';
 import { getStreamStateFromDynamo } from './mux/getStreamStateFromDynamo';
 
 
