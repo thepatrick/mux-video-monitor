@@ -31,10 +31,6 @@ Resources:
         AttributeType: S
       - AttributeName: CacheKey
         AttributeType: S
-      - AttributeName: CacheValue
-        AttributeType: S
-      - AttributeName: LastUpdated
-        AttributeType: N
       BillingMode: "PAY_PER_REQUEST"
       KeySchema:
       - AttributeName: CacheKind
