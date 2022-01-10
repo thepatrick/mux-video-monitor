@@ -111,6 +111,9 @@ Resources:
       Role: !GetAtt "BackendLambdaRole.Arn"
       Runtime: "nodejs14.x"
       Timeout: 25
+      Environment:
+        Variables:
+          CACHE_TABLE_NAME: !Ref "CacheTable"
       
 
   BackendAPIRole:
