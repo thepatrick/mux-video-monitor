@@ -53,6 +53,22 @@ Resources:
           - "sts:AssumeRole"
           Effect: "Allow"
   
+  CanPopulateDynamoCache:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "CanPopulateDynamoCache"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Action:
+          - "dynamodb:Get*"
+          - "dynamodb:Put*"
+          Resource:
+          - !GetAtt "CacheTable.Arn"
+      Roles:
+      - !Ref "BackendLambdaRole"
+
   CanReadFromSSM:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -81,6 +97,9 @@ Resources:
       Role: !GetAtt "BackendLambdaRole.Arn"
       Runtime: "nodejs14.x"
       Timeout: 25
+      Environment:
+        Variables:
+          CACHE_TABLE_NAME: !Ref "CacheTable"
   
   BackendListRoomsFn:
     Type: AWS::Lambda::Function
@@ -92,6 +111,7 @@ Resources:
       Role: !GetAtt "BackendLambdaRole.Arn"
       Runtime: "nodejs14.x"
       Timeout: 25
+      
 
   BackendAPIRole:
     Type: AWS::IAM::Role

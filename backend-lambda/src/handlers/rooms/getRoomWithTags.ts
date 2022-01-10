@@ -1,5 +1,5 @@
 import { SSM } from 'aws-sdk';
-import { failure, Result, success } from './result';
+import { failure, Result, success } from '../../helpers/result';
 
 export type RoomTag = Record<string, string>;
 export interface RoomWithTags {
@@ -24,7 +24,7 @@ export const getRoomWithTags = async (ssm: SSM, id: string): Promise<Result<Erro
       ...prev,
       [Key]: Value,
     }),
-    {} as RoomTag
+    {} as RoomTag,
   );
 
   return success({ id, tags });

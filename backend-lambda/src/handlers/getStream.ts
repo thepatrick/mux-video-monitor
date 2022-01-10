@@ -3,8 +3,8 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { SSM } from 'aws-sdk';
 import { notFound, response } from '../helpers/response';
 import { failure, isFailure, Result, success } from '../helpers/result';
-import { catchErrors } from './catchErrors';
-import { getRoomWithTags } from '../helpers/getRoomWithTags';
+import { catchErrors } from '../helpers/catchErrors';
+import { getRoomWithTags } from './rooms/getRoomWithTags';
 
 const maybeGetMuxTokenSecret = async (ssm: SSM, muxTokenId: string): Promise<Result<Error, string>> => {
   try {
