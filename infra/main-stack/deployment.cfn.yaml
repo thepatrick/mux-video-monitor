@@ -114,7 +114,20 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
-      
+  
+  BackendRefreshFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BackendLambdaS3Bucket
+        S3Key: !Ref BackendLambdaS3Key
+      Handler: src/index.refresh
+      Role: !GetAtt "BackendLambdaRole.Arn"
+      Runtime: "nodejs14.x"
+      Timeout: 25
+      Environment:
+        Variables:
+          CACHE_TABLE_NAME: !Ref "CacheTable"
 
   BackendAPIRole:
     Type: AWS::IAM::Role
@@ -139,6 +152,7 @@ Resources:
             Resource:
             - !GetAtt BackendGetStreamFn.Arn
             - !GetAtt BackendListRoomsFn.Arn
+            - !GetAtt BackendRefreshFn.Arn
 
   BackendAPI:
     Type: AWS::ApiGatewayV2::Api
@@ -201,6 +215,27 @@ Resources:
       RouteKey: GET /stream
       Target: !Sub "integrations/${BackendListRoomsIntegration}"
 
+  BackendRefreshIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BackendAPI
+      Description: "Refresh cached data"
+      ConnectionType: INTERNET
+      CredentialsArn: !GetAtt "BackendAPIRole.Arn"
+      PassthroughBehavior: "WHEN_NO_MATCH"
+      TimeoutInMillis: 29000
+      IntegrationMethod: "POST"
+      IntegrationType: "AWS_PROXY"
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendRefreshFn.Arn}/invocations"
+
+  BackendRefreshRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref BackendAPI
+      RouteKey: GET /refresh
+      Target: !Sub "integrations/${BackendRefreshIntegration}"
+
   BackendAPIDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -208,6 +243,8 @@ Resources:
     - BackendGetStreamRoute
     - BackendListRoomsRoute
     - BackendListRoomsIntegration
+    - BackendRefreshRoute
+    - BackendRefreshIntegration
     Properties:
       Description: !Sub "${AWS::StackName} API Deployment"
       ApiId: !Ref BackendAPI
