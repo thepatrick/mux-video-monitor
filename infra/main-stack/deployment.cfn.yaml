@@ -219,7 +219,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref BackendAPI
-      Description: "List Rooms"
+      Description: "Refresh cached data"
       ConnectionType: INTERNET
       CredentialsArn: !GetAtt "BackendAPIRole.Arn"
       PassthroughBehavior: "WHEN_NO_MATCH"
