@@ -23,6 +23,25 @@ Resources:
           HostedZoneId: !Ref HostedZoneId
       ValidationMethod: "DNS"
   
+  CacheTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: CacheKind
+        AttributeType: S
+      - AttributeName: CacheKey
+        AttributeType: S
+      - AttributeName: CacheValue
+        AttributeType: S
+      - AttributeName: LastUpdated
+        AttributeType: N
+      BillingMode: "PAY_PER_REQUEST"
+      KeySchema:
+      - AttributeName: CacheKind
+        KeyType: HASH
+      - AttributeName: CacheKey
+        KeyType: RANGE
+
   BackendLambdaRole:
     Type: "AWS::IAM::Role"
     Properties:
