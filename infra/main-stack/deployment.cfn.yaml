@@ -129,6 +129,20 @@ Resources:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
 
+  BackendMuxFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BackendLambdaS3Bucket
+        S3Key: !Ref BackendLambdaS3Key
+      Handler: src/index.muxWebhook
+      Role: !GetAtt "BackendLambdaRole.Arn"
+      Runtime: "nodejs14.x"
+      Timeout: 25
+      Environment:
+        Variables:
+          CACHE_TABLE_NAME: !Ref "CacheTable"
+
   BackendAPIRole:
     Type: AWS::IAM::Role
     Properties:
@@ -153,6 +167,7 @@ Resources:
             - !GetAtt BackendGetStreamFn.Arn
             - !GetAtt BackendListRoomsFn.Arn
             - !GetAtt BackendRefreshFn.Arn
+            - !GetAtt BackendMuxFn.Arn
 
   BackendAPI:
     Type: AWS::ApiGatewayV2::Api
@@ -236,6 +251,27 @@ Resources:
       RouteKey: GET /refresh
       Target: !Sub "integrations/${BackendRefreshIntegration}"
 
+  BackendMuxIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BackendAPI
+      Description: "Mux Webhook"
+      ConnectionType: INTERNET
+      CredentialsArn: !GetAtt "BackendAPIRole.Arn"
+      PassthroughBehavior: "WHEN_NO_MATCH"
+      TimeoutInMillis: 29000
+      IntegrationMethod: "POST"
+      IntegrationType: "AWS_PROXY"
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendMuxFn.Arn}/invocations"
+
+  BackendMuxRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref BackendAPI
+      RouteKey: POST /mux/{muxTokenId}
+      Target: !Sub "integrations/${BackendMuxIntegration}"
+
   BackendAPIDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -245,6 +281,8 @@ Resources:
     - BackendListRoomsIntegration
     - BackendRefreshRoute
     - BackendRefreshIntegration
+    - BackendMuxRoute
+    - BackendMuxIntegration
     Properties:
       Description: !Sub "${AWS::StackName} API Deployment"
       ApiId: !Ref BackendAPI

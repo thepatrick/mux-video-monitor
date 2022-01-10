@@ -4,3 +4,4 @@
 **/*.guard.ts
 build.key
 build.zip
+local-*
