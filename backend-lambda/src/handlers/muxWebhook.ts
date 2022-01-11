@@ -33,8 +33,8 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  const muxTokenId = event.pathParameters?.muxTokenId;
-  if (muxTokenId === undefined || muxTokenId.length === 0) {
+  const roomId = event.pathParameters?.muxTokenId;
+  if (roomId === undefined || roomId.length === 0) {
     return notFound();
   }
 
@@ -53,11 +53,11 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
     return response({ ok: true });
   }
 
-  console.log(`Attempting to refresh cache for ${muxTokenId}`);
+  console.log(`Attempting to refresh cache for ${roomId}`);
 
   // MAYBE: This may need to move into a seperate lambda that is async
 
-  const maybeRefreshed = await getStreamStateFromDynamo(TableName, muxTokenId, true);
+  const maybeRefreshed = await getStreamStateFromDynamo(TableName, roomId, true);
 
   if (isFailure(maybeRefreshed)) {
     return invalidRequest();
@@ -73,7 +73,7 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
       console.log('Not notifiying ably (ABLY_SERVER_KEY not set)');
     } else {
       console.log('Notifingly ably')
-      await ably.channels.get('mux-monitor.aws.nextdayvideo.com.au').publish('stream', successValue(maybeRefreshed));
+      await ably.channels.get('mux-monitor.aws.nextdayvideo.com.au').publish('stream', { roomId, ...successValue(maybeRefreshed)});
     }
   }
 
