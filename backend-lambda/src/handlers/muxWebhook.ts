@@ -4,28 +4,9 @@ import { catchErrors } from '../helpers/catchErrors';
 import { TableName } from './listRooms';
 import { isMuxWebhookBody } from '../types.guard';
 import { parseBody } from '../helpers/parseBody';
-import { isFailure, Result, success, successValue } from '../helpers/result';
+import { isFailure, successValue } from '../helpers/result';
 import { getStreamStateFromDynamo } from './mux/getStreamStateFromDynamo';
-import { Rest, Types as AblyTypes } from 'ably';
-import { maybeGetSecret } from '../helpers/maybeGetSecret';
-import { SSM } from 'aws-sdk';
-
-const ABLY_SERVER_KEY = process.env.ABLY_SERVER_KEY;
-
-const getAblyClient = async (): Promise<Result<Error, AblyTypes.RestPromise | undefined>> => {
-  if (!ABLY_SERVER_KEY) {
-    return success(undefined);
-  }
-  const ssm = new SSM();
-  const maybeKey = await maybeGetSecret(ssm, ABLY_SERVER_KEY);
-  if (isFailure(maybeKey)) {
-    return maybeKey;
-  }
-
-  const key = successValue(maybeKey);
-
-  return success(new Rest.Promise({ key }));
-};
+import { getAblyClient } from './ably/getAblyClient';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, context) => {
@@ -33,8 +14,8 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  const muxTokenId = event.pathParameters?.muxTokenId;
-  if (muxTokenId === undefined || muxTokenId.length === 0) {
+  const roomId = event.pathParameters?.muxTokenId;
+  if (roomId === undefined || roomId.length === 0) {
     return notFound();
   }
 
@@ -53,11 +34,11 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
     return response({ ok: true });
   }
 
-  console.log(`Attempting to refresh cache for ${muxTokenId}`);
+  console.log(`Attempting to refresh cache for ${roomId}`);
 
   // MAYBE: This may need to move into a seperate lambda that is async
 
-  const maybeRefreshed = await getStreamStateFromDynamo(TableName, muxTokenId, true);
+  const maybeRefreshed = await getStreamStateFromDynamo(TableName, roomId, true);
 
   if (isFailure(maybeRefreshed)) {
     return invalidRequest();
@@ -72,8 +53,10 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
     if (ably == undefined) {
       console.log('Not notifiying ably (ABLY_SERVER_KEY not set)');
     } else {
-      console.log('Notifingly ably')
-      await ably.channels.get('mux-monitor.aws.nextdayvideo.com.au').publish('stream', successValue(maybeRefreshed));
+      console.log('Notifingly ably');
+      await ably.channels
+        .get('mux-monitor.aws.nextdayvideo.com.au')
+        .publish('stream', { roomId, why: body.type, ...successValue(maybeRefreshed) });
     }
   }
 
