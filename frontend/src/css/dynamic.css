@@ -133,7 +133,8 @@ body {
 
 #room-name,
 #nav,
-#warning {
+#warning,
+#last-update {
   background-color: #444444;
   padding: 1em;
   display: inline-block;
@@ -186,6 +187,12 @@ body {
 #offline p {
   color: #eeeeee;
   font-family: monospace;
+}
+
+#last-update {
+  top: auto;
+  bottom: 20px;
+  left: 20px;
 }
 
 #nav h1 {

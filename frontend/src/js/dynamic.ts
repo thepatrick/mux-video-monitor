@@ -4,6 +4,18 @@ import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeter
 import Hls from 'hls.js';
 import { listenForAblyNotifications } from './ably/listenForAblyNotifications';
 
+const createTextThing = (el: HTMLDivElement) => (msg: string) => {
+  el.textContent = msg;
+};
+
+const nowIs = () => {
+  const now = new Date();
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+
+  return `${now.getHours()}:${minutes}:${seconds}`;
+};
+
 const run = async () => {
   if (!Hls.isSupported()) {
     alert('This multiview is only intended for use with hls.js, sorry');
@@ -15,6 +27,18 @@ const run = async () => {
   const warningEl = document.getElementById('warning');
   const offlineEl = document.getElementById('offline');
   const roomNameEl = document.getElementById('room-name');
+  const lastUpdateEl = document.getElementById('last-update') as HTMLDivElement;
+
+  const lastUpdate = createTextThing(lastUpdateEl);
+
+  const updateLastUpdate = () => {
+    const buffer = video.duration - video.currentTime;
+    lastUpdate(`${video.paused ? '⏸' : '▶️'} Buffer: ${buffer.toFixed(0)}s. At: ${nowIs()}`);
+  };
+
+  video.addEventListener('timeupdate', updateLastUpdate);
+  video.addEventListener('durationchange', updateLastUpdate);
+  video.addEventListener('pause', updateLastUpdate);
 
   mountSetupAudioMeterForMultiview(video, vuMeter, document.body as HTMLBodyElement);
 
