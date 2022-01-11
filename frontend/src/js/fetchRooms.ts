@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-interface Room {
+export interface Room {
   id: string;
   name: string;
 }
@@ -55,5 +55,6 @@ export const fetchRooms = async (): Promise<FetchRoomsOk | FetchRoomsError> => {
   }
 };
 
-export const viewerURI = (id: string): string => `dynamic.html?id=${encodeURIComponent(id)}&v=${nanoid()}`;
+export const iframeURI = (id: string): string => `dynamic.html?id=${encodeURIComponent(id)}&v=${nanoid()}`;
+export const viewerURI = (id: string): string => `all.html?only=${encodeURIComponent(id)}&v=${nanoid()}`;
 export const castURI = (id: string): string => `cast.html?id=${encodeURIComponent(id)}&v=${nanoid()}`;

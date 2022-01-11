@@ -1,9 +1,8 @@
 import { createSetTitleLabel } from './dynamic/createSetTitleLabel';
-import { fetchState } from './fetchState';
+import { fetchState, MuxStreamState } from './fetchState';
 import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeterForMultiview';
-import { wait } from './wait';
-
 import Hls from 'hls.js';
+import { listenForAblyNotifications } from './ably/listenForAblyNotifications';
 
 const run = async () => {
   if (!Hls.isSupported()) {
@@ -69,15 +68,16 @@ const run = async () => {
 
   let refreshingFromState = false;
 
-  const refreshFromState = async (force) => {
+  const refreshFromState = async (force, ablyState?: MuxStreamState) => {
     if (refreshingFromState) {
+      // TODO: if ablyState: trigger another update shortly
       return;
     }
     refreshingFromState = true;
 
     setTitleLabel({ loading: true, room: currentRoomName });
 
-    const state = await fetchState(id);
+    const state = ablyState || (await fetchState(id));
 
     if (state.ok === false) {
       setTitleLabel({ error: state.error, room: currentRoomName });
@@ -186,16 +186,13 @@ const run = async () => {
     }
   });
 
-  do {
-    await refreshFromState(false);
+  listenForAblyNotifications(
+    id,
+    (title, streamURL) => refreshFromState(false, { ok: true, online: true, stream: streamURL, title }),
+    (title) => refreshFromState(false, { ok: true, online: false, title }),
+  );
 
-    const offset = 30000 + (Math.round(Math.random() * 10000) - 5000);
-
-    console.log(`[${id}] Next in ${offset}ms`);
-
-    await wait(offset);
-    // eslint-disable-next-line no-constant-condition
-  } while (true);
+  await refreshFromState(false);
 };
 
 run().catch((err) => console.error('Failed somewhere', err));

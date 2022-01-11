@@ -18,9 +18,9 @@ interface MuxStreamStateError {
   error: string;
 }
 
-export const fetchState = async (
-  id: string,
-): Promise<MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError> => {
+export type MuxStreamState = MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError;
+
+export const fetchState = async (id: string): Promise<MuxStreamState> => {
   try {
     const before = Date.now();
     const fetchResponse = await fetch(`/api/stream/${encodeURIComponent(id)}?${nanoid()}`);
