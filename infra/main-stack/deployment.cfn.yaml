@@ -84,6 +84,7 @@ Resources:
           - "ssm:ListTagsForResource"
           Resource:
           - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/mux/*"
+          - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/ably/*"
       Roles:
       - !Ref "BackendLambdaRole"
 
@@ -142,6 +143,7 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
+          ABLY_SERVER_KEY: "/mux/ably/server"
 
   BackendAPIRole:
     Type: AWS::IAM::Role
