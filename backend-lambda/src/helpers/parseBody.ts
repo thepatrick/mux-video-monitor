@@ -1,4 +1,4 @@
-import { failure, Result, success } from "./result";
+import { failure, Result, success } from './result';
 
 export const parseBody = <T>(
   body: string | undefined,
