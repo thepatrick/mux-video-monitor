@@ -4,10 +4,28 @@ import { catchErrors } from '../helpers/catchErrors';
 import { TableName } from './listRooms';
 import { isMuxWebhookBody } from '../types.guard';
 import { parseBody } from '../helpers/parseBody';
-import { isFailure, successValue } from '../helpers/result';
+import { isFailure, Result, success, successValue } from '../helpers/result';
 import { getStreamStateFromDynamo } from './mux/getStreamStateFromDynamo';
+import { Rest, Types as AblyTypes } from 'ably';
+import { maybeGetSecret } from '../helpers/maybeGetSecret';
+import { SSM } from 'aws-sdk';
 
+const ABLY_SERVER_KEY = process.env.ABLY_SERVER_KEY;
 
+const getAblyClient = async (): Promise<Result<Error, AblyTypes.RestPromise | undefined>> => {
+  if (!ABLY_SERVER_KEY) {
+    return success(undefined);
+  }
+  const ssm = new SSM();
+  const maybeKey = await maybeGetSecret(ssm, ABLY_SERVER_KEY);
+  if (isFailure(maybeKey)) {
+    return maybeKey;
+  }
+
+  const key = successValue(maybeKey);
+
+  return success(new Rest.Promise({ key }));
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, context) => {
@@ -28,6 +46,8 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
 
   const body = successValue(maybeBody);
 
+  const maybeAblyTask = getAblyClient();
+
   if (!body.type.includes('video.live_stream')) {
     console.log(`Ignoring webhook about ${body.type}`);
     return response({ ok: true });
@@ -41,6 +61,20 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
 
   if (isFailure(maybeRefreshed)) {
     return invalidRequest();
+  }
+
+  const maybeAbly = await maybeAblyTask;
+  if (isFailure(maybeAbly)) {
+    console.log(`Failed to initialise ably`, maybeAbly.value);
+  } else {
+    const ably = successValue(maybeAbly);
+
+    if (ably == undefined) {
+      console.log('Not notifiying ably (ABLY_SERVER_KEY not set)');
+    } else {
+      console.log('Notifingly ably')
+      await ably.channels.get('mux-monitor.aws.nextdayvideo.com.au').publish('stream', successValue(maybeRefreshed));
+    }
   }
 
   return response({ ok: true });
