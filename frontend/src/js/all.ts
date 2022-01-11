@@ -1,10 +1,11 @@
 import { createStreamIframe } from './createStreamIframe';
-import { fetchRooms, viewerURI } from './fetchRooms';
+import { fetchRooms, iframeURI, Room } from './fetchRooms';
 import { roomLayouts } from './roomLayouts';
 import { wait } from './wait';
 import { createPauseAudioHopper } from './createPauseAudioHopper';
 import { createStartAudioHopper } from './createStartAudioHopper';
 import { createNextPrevious } from './createNextPrevious';
+import { createAblyOrchestrator } from './ably/createAblyOrchestrator';
 
 type volumeFn = (volume: number) => void;
 
@@ -87,6 +88,8 @@ const createAudioController = (streamFrames: HTMLIFrameElement[], speed: number)
 const run = async () => {
   console.log('hi');
 
+  const params = new URLSearchParams(location.search.slice(1));
+
   const streamIframe = createStreamIframe(document.body);
 
   const roomsResponse = await fetchRooms();
@@ -96,17 +99,19 @@ const run = async () => {
     return;
   }
 
-  const { rooms } = roomsResponse;
+  let rooms: Room[] = roomsResponse.rooms;
+  if (params.has('only')) {
+    const onlyId = params.get('only');
+    rooms = rooms.filter(({ id }) => id === onlyId);
+  }
 
   let roomIndex = 0;
   const layouts = roomLayouts[rooms.length];
 
   const streamFrames: HTMLIFrameElement[] = [];
   for (const { id } of rooms) {
-    streamFrames.push(streamIframe(id, viewerURI(id), layouts[roomIndex++]));
+    streamFrames.push(streamIframe(id, iframeURI(id), layouts[roomIndex++]));
   }
-
-  const params = new URLSearchParams(location.search.slice(1));
 
   let rotateSpeed = 30;
 
@@ -117,6 +122,8 @@ const run = async () => {
       throw new Error('audio-hopper is not a number, this is... not supported');
     }
   }
+
+  await createAblyOrchestrator(streamFrames);
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   createStartAudioHopper(document.body, createAudioController(streamFrames, rotateSpeed * 1000));

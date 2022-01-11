@@ -1,4 +1,5 @@
 export const roomLayouts: Record<number, string[]> = {
+  1: ['width: calc(100%); height: calc(100% - 50px); position: absolute; left: 0; top: 0px;'],
   2: [
     'width: calc(50% - 1px); height: calc(100% - 50px); position: absolute; left: 0; top: 0px;',
     'width: calc(50% - 1px); height: calc(100% - 50px); position: absolute; right: 0; top: 0px;',
