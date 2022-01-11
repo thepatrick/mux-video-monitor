@@ -13,10 +13,6 @@ export const createSetTitleLabel =
       description = '...';
     } else if (error) {
       description = `: ${error}`;
-    } else if (live) {
-      description = ' (live)';
-    } else {
-      description = ' (offline)';
     }
     el.textContent = `${room}${description}`;
   };

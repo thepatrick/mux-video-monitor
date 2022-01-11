@@ -4,6 +4,18 @@ import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeter
 import Hls from 'hls.js';
 import { listenForAblyNotifications } from './ably/listenForAblyNotifications';
 
+const createTextThing = (el: HTMLDivElement) => (msg: string) => {
+  el.textContent = msg;
+};
+
+const nowIs = () => {
+  const now = new Date();
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+
+  return `${now.getHours()}:${minutes}:${seconds}`;
+};
+
 const run = async () => {
   if (!Hls.isSupported()) {
     alert('This multiview is only intended for use with hls.js, sorry');
@@ -15,6 +27,9 @@ const run = async () => {
   const warningEl = document.getElementById('warning');
   const offlineEl = document.getElementById('offline');
   const roomNameEl = document.getElementById('room-name');
+  const lastUpdateEl = document.getElementById('last-update') as HTMLDivElement;
+
+  const lastUpdate = createTextThing(lastUpdateEl);
 
   mountSetupAudioMeterForMultiview(video, vuMeter, document.body as HTMLBodyElement);
 
@@ -40,6 +55,20 @@ const run = async () => {
     void video.play();
   });
 
+  const updateLastUpdate = () => {
+    const buffer = video.duration - video.currentTime;
+    lastUpdate(
+      `${video.paused ? '⏸' : '▶️'} Buffer: ${buffer.toFixed(0)}s. Latency: ${hls.latency.toFixed(
+        1,
+      )}s. Drift: ${hls.drift.toFixed(2)}. At: ${nowIs()}`,
+    );
+  };
+
+  video.addEventListener('timeupdate', updateLastUpdate);
+  video.addEventListener('durationchange', updateLastUpdate);
+  video.addEventListener('pause', updateLastUpdate);
+  hls.on(Hls.Events.BUFFER_APPENDING, () => updateLastUpdate());
+
   const id = params.get('id');
   if (!id) {
     throw new Error('ID not set');
@@ -59,7 +88,7 @@ const run = async () => {
   let clearShowWarning;
   const showWarning = (message: string) => {
     warningEl.style.display = '';
-    warningEl.querySelector('small').textContent = `${message} (${new Date().toTimeString()})`;
+    warningEl.querySelector('small').textContent = `${message} (${nowIs()})`;
     clearTimeout(clearShowWarning);
     clearShowWarning = setTimeout(() => {
       warningEl.style.display = 'none';
@@ -104,15 +133,21 @@ const run = async () => {
         video.pause();
       }
 
+      lastUpdate(`⏹ Offline at ${nowIs()}`);
+
       currentStreamURL = undefined;
     }
 
     refreshingFromState = false;
   };
 
-  hls.on(Hls.Events.ERROR, function (eventName, data) {
+  hls.on(Hls.Events.ERROR, (eventName, data) => {
     console.warn('Error event:', data);
     switch (data.details) {
+      case Hls.ErrorDetails.BUFFER_INCOMPATIBLE_CODECS_ERROR:
+        showWarning('BUFFER_INCOMPATIBLE_CODECS_ERROR');
+        hls.recoverMediaError();
+        return;
       case Hls.ErrorDetails.MANIFEST_LOAD_ERROR:
         showWarning(`MANIFEST_LOAD_ERROR`);
         break;
@@ -192,6 +227,7 @@ const run = async () => {
     (title) => refreshFromState(false, { ok: true, online: false, title }),
   );
 
+  lastUpdate('Starting up...');
   await refreshFromState(false);
 };
 
