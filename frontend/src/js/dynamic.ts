@@ -23,6 +23,7 @@ const run = async () => {
 
   const video = document.getElementById('azuremediaplayer') as HTMLVideoElement;
   const vuMeter = document.getElementById('vu-meter') as HTMLDivElement;
+  const videoContainer = document.getElementById('video-row') as HTMLDivElement;
 
   const warningEl = document.getElementById('warning');
   const offlineEl = document.getElementById('offline');
@@ -81,8 +82,8 @@ const run = async () => {
 
   const showError = (message: string) => {
     offlineEl.style.display = '';
-    offlineEl.querySelector('small').textContent = `${currentRoomName}: ${message}`;
-    video.style.display = 'none';
+    offlineEl.querySelector('p').textContent = `${message}`;
+    videoContainer.style.display = 'none';
   };
 
   let clearShowWarning;
