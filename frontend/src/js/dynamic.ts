@@ -121,6 +121,7 @@ const run = async () => {
 
     if (state.online === true) {
       video.style.display = '';
+      videoContainer.style.display = '';
       offlineEl.style.display = 'none';
       if (force || state.stream !== currentStreamURL) {
         hls.loadSource(state.stream + '?cdn=fastly');
