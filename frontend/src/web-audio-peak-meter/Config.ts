@@ -5,6 +5,7 @@ export interface Config {
   vertical: boolean;
   borderSize: number;
   fontSize: number;
+  peakFontSize: number;
   backgroundColor: string;
   tickColor: string;
   labelColor: string;
@@ -23,6 +24,7 @@ export const defaultConfig: Config = {
   vertical: true,
   borderSize: 1,
   fontSize: 9,
+  peakFontSize: 9,
   backgroundColor: 'black',
   tickColor: '#ddd',
   labelColor: '#ddd',
