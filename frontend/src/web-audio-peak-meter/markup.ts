@@ -196,14 +196,14 @@ export function createBars(
 }
 
 export function createPeakLabels(
-  { borderSize, labelColor, fontSize }: { borderSize: number; labelColor: string; fontSize: number },
+  { borderSize, labelColor, peakFontSize }: { borderSize: number; labelColor: string; peakFontSize: number },
   { vertical, meterWidth, meterHeight, tickWidth }: MeterDataMarkup,
   channelCount: number,
 ): HTMLDivElement[] {
   const labelDivs = Array.from(Array(channelCount).keys()).map(() =>
     div('-∞', {
       'x-kind': 'peak-label',
-      style: `text-align: center; color: ${labelColor}; font-size: ${fontSize}px; position: absolute;`,
+      style: `text-align: center; color: ${labelColor}; font-size: ${peakFontSize}px; position: absolute;`,
     }),
   );
 
@@ -217,7 +217,7 @@ export function createPeakLabels(
   } else {
     const barHeight = meterHeight / channelCount;
     labelDivs.forEach((label, i) => {
-      label.style.width = `${fontSize * 2}px`;
+      label.style.width = `${peakFontSize * 2}px`;
       label.style.right = `${borderSize}px`;
       label.style.top = `${barHeight * i + tickWidth}px`;
     });
