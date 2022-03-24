@@ -28,7 +28,7 @@
     "@types/chromecast-caf-sender": "^1.0.5",
     "ably": "^1.2.15",
     "hls.js": "^1.0.10",
-    "nanoid": "^3.1.25"
+    "nanoid": "^3.3.1"
   },
   "browserslist": [
     "last 1 Edge version",
