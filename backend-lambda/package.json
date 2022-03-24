@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@mux/mux-node": "^3.1.1",
-    "ably": "^1.2.15",
+    "ably": "^1.2.17",
     "aws-sdk": "^2.819.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
