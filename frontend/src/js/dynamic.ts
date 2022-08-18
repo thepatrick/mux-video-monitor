@@ -45,7 +45,7 @@ const run = async () => {
     levelLoadingMaxRetry: Infinity,
     levelLoadingMaxRetryTimeout: 5000,
     liveBackBufferLength: 0,
-    liveSyncDurationCount: 9,
+    liveSyncDurationCount: 3,
     liveMaxLatencyDurationCount: 10,
     manifestLoadingMaxRetry: Infinity,
     manifestLoadingMaxRetryTimeout: 5000,
