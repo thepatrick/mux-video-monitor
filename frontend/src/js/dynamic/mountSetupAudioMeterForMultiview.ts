@@ -71,7 +71,7 @@ export const mountSetupAudioMeterForMultiview = (
         console.log('[SetAudioVolume] Ignoring this', data);
         return;
       }
-      console.log('Updating volume!', data);
+      console.log('Updating volume! %d', data.volume);
 
       gainNode.gain.setValueAtTime(data.volume, audioCtx.currentTime);
 
