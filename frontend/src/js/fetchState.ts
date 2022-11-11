@@ -30,7 +30,7 @@ export const fetchState = async (id: string): Promise<MuxStreamState> => {
 
     const totalTime = Date.now() - before;
 
-    console.log(`[${id}] Got state in ${totalTime}ms`, state);
+    console.log(`[%s] Got state in %dms`, id, totalTime, state);
 
     return state;
   } catch (err) {

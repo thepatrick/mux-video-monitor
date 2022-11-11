@@ -24,7 +24,7 @@ export const listenForAblyNotifications = (
 
     const { state, streamURL, title, why } = data.message;
 
-    console.log(`[ably] Updating ${id} because ${why}`);
+    console.log(`[ably] Updating ${id} because ${JSON.stringify(why)}`);
 
     if (state === 'active') {
       console.log(`[ably] Marking ${id} as active`);
