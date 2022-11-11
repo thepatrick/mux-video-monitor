@@ -39,10 +39,10 @@ export const mountSetupAudioMeterForMultiview = (
   window.addEventListener('message', (ev: MessageEvent<unknown>) => {
     const data = ev.data;
     if (!isSetupAudioMeter(data)) {
-      console.log('[AudioSetupMeter] Ignoring this', data);
+      console.log('[AudioSetupMeter] Ignoring this', JSON.stringify(data));
       return;
     }
-    console.log('window message', data);
+    console.log('[AudioSetupMeter] Setup for muiltiview...');
 
     body.classList.add('show-vu-meter');
 
@@ -68,7 +68,7 @@ export const mountSetupAudioMeterForMultiview = (
     window.addEventListener('message', (ev: MessageEvent<unknown>) => {
       const data = ev.data;
       if (!isSetAudioVolume(data)) {
-        console.log('[SetAudioVolume] Ignoring this', data);
+        console.log('[SetAudioVolume] Ignoring this', JSON.stringify(data));
         return;
       }
       console.log('Updating volume! %d', data.volume);
