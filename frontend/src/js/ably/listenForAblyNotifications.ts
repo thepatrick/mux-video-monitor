@@ -6,14 +6,19 @@ export const listenForAblyNotifications = (
   onNotActive: (title: string) => Promise<void> | void,
 ): void => {
   window.addEventListener('message', (ev: MessageEvent<unknown>) => {
-    const data = ev.data;
-    if (!isAblyNotification(data)) {
-      console.log('[AblyNotifier] Ignoring this', data);
+    if (event.origin !== location.origin) {
+      // Ignore messages from other origins.
       return;
     }
-    console.log('[AblyNotifier] Got data', data);
+
+    const data = ev.data;
+    if (!isAblyNotification(data)) {
+      console.log('[AblyNotifier] Ignoring this', JSON.stringify(data));
+      return;
+    }
+    console.log('[AblyNotifier] Got data', JSON.stringify(data));
     if (data.message.roomId !== id) {
-      console.debug('[ably] Ignoring update for another stream', data.message.roomId);
+      console.debug('[ably] Ignoring update for another stream', JSON.stringify(data.message.roomId));
       return;
     }
 
