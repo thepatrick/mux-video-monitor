@@ -45,6 +45,6 @@
     "prettier": "^2.4.1",
     "ts-auto-guard": "^4.0.0",
     "ts-jest": "^29.0.0",
-    "typescript": "^4.1.3"
+    "typescript": "^5.0.0"
   }
 }
