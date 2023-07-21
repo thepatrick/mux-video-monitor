@@ -6,7 +6,7 @@ export const listenForAblyNotifications = (
   onNotActive: (title: string) => Promise<void> | void,
 ): void => {
   window.addEventListener('message', (ev: MessageEvent<unknown>) => {
-    if (event.origin !== location.origin) {
+    if (ev.origin !== location.origin) {
       // Ignore messages from other origins.
       return;
     }
