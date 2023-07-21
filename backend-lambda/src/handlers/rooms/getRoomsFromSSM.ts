@@ -21,9 +21,15 @@ export const getRoomsFromSSM = async (): Promise<Result<Error, Room[]>> => {
 
   const eventuallyNames = Parameters.map(({ Name }) => Name)
     .filter(notUndefined)
-    .map((name) => roomTagsQueue.add(() => getRoomWithTags(ssm, name)));
+    .map((name) => { const x = roomTagsQueue.add(() => getRoomWithTags(ssm, name));
+    return x; });
 
-  const maybeRooms = await Promise.all(eventuallyNames);
+  const maybeRooms = (await Promise.all(eventuallyNames)).map(r => {
+    if (r == null) {
+      return failure(new Error('Cancelled'));
+    }
+    return r;
+  });
 
   const errors = maybeRooms.filter(isFailure).map(({ value }) => value);
 
