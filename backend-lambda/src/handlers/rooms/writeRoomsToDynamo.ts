@@ -1,4 +1,5 @@
-import { AWSError, DynamoDB } from 'aws-sdk';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { marshall } from '@aws-sdk/util-dynamodb';
 import { failure, isFailure, Result, success, successValue } from '../../helpers/result';
 import { Room, RoomDocument } from './Room';
 
@@ -15,14 +16,12 @@ const writeRoomsToDynamo = async (
   };
 
   try {
-    await dynamo
-      .putItem({
-        TableName: tableName,
-        Item: DynamoDB.Converter.marshall(item),
-      })
-      .promise();
+    await dynamo.putItem({
+      TableName: tableName,
+      Item: marshall(item),
+    });
   } catch (error) {
-    return failure(error as AWSError);
+    return failure(error as Error);
   }
 
   return success(roomList);

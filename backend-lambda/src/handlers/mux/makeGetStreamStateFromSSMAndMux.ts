@@ -1,4 +1,4 @@
-import { SSM } from 'aws-sdk';
+import { SSM } from '@aws-sdk/client-ssm';
 import { failure, isFailure, Result, success, successValue } from '../../helpers/result';
 import { getRoomWithTags } from '../rooms/getRoomWithTags';
 import { getStreamURL } from './getStreamURL';
@@ -6,7 +6,8 @@ import { StreamStateWithTitle } from './StreamState';
 import { demos } from './demos';
 import { maybeGetSecret } from '../../helpers/maybeGetSecret';
 
-export const makeGetStreamStateFromSSMAndMux = (ssm: SSM) =>
+export const makeGetStreamStateFromSSMAndMux =
+  (ssm: SSM) =>
   async (roomId: string): Promise<Result<Error, StreamStateWithTitle>> => {
     const maybeMuxTokenSecret = await maybeGetSecret(ssm, `/multiview/mux/${roomId}`);
     if (isFailure(maybeMuxTokenSecret)) {

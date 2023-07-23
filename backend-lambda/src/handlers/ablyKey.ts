@@ -2,8 +2,9 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { notFound, response } from '../helpers/response';
 import { catchErrors } from '../helpers/catchErrors';
 import { isFailure, successValue } from '../helpers/result';
-import { SSM } from 'aws-sdk';
+import { SSM } from '@aws-sdk/client-ssm';
 import { maybeGetSecret } from '../helpers/maybeGetSecret';
+import { credentialProvider } from '../helpers/credentialProvider';
 
 const ABLY_CLIENT_KEY = process.env.ABLY_CLIENT_KEY;
 
@@ -14,7 +15,8 @@ export const ablyKey: APIGatewayProxyHandlerV2 = catchErrors(async (event, conte
     return notFound();
   }
 
-  const ssm = new SSM();
+  const ssm = new SSM({ credentials: credentialProvider });
+
   const maybeKey = await maybeGetSecret(ssm, ABLY_CLIENT_KEY);
   if (isFailure(maybeKey)) {
     console.log(`Unable to get ${ABLY_CLIENT_KEY}`, maybeKey.value);

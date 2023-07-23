@@ -1,7 +1,8 @@
 import { isFailure, Result, success, successValue } from '../../helpers/result';
 import { Rest, Types as AblyTypes } from 'ably';
 import { maybeGetSecret } from '../../helpers/maybeGetSecret';
-import { SSM } from 'aws-sdk';
+import { SSM } from '@aws-sdk/client-ssm';
+import { credentialProvider } from '../../helpers/credentialProvider';
 
 const ABLY_SERVER_KEY = process.env.ABLY_SERVER_KEY;
 
@@ -9,7 +10,7 @@ export const getAblyClient = async (): Promise<Result<Error, AblyTypes.RestPromi
   if (!ABLY_SERVER_KEY) {
     return success(undefined);
   }
-  const ssm = new SSM();
+  const ssm = new SSM({ credentials: credentialProvider });
   const maybeKey = await maybeGetSecret(ssm, ABLY_SERVER_KEY);
   if (isFailure(maybeKey)) {
     return maybeKey;

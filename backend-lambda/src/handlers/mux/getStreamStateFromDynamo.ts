@@ -1,18 +1,20 @@
-import { DynamoDB, SSM } from 'aws-sdk';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { isFailure, Result, success, successValue } from '../../helpers/result';
 import { StreamStateDocument, StreamStateWithTitle } from './StreamState';
 import { getDynamoCacheDocument } from '../../helpers/getDynamoCacheDocument';
 import { makeGetStreamStateFromSSMAndMux } from './makeGetStreamStateFromSSMAndMux';
 import { makeRefreshStreamState, ageLimit } from './refreshStreamState';
+import { SSM } from '@aws-sdk/client-ssm';
+import { credentialProvider } from '../../helpers/credentialProvider';
 
 export const getStreamStateFromDynamo = async (
   tableName: string,
   roomID: string,
-  forceRefresh: boolean
+  forceRefresh: boolean,
 ): Promise<Result<Error, StreamStateWithTitle>> => {
-  const dynamo = new DynamoDB();
+  const dynamo = new DynamoDB({ credentials: credentialProvider });
 
-  const getStreamStateFromSSMAndMux = makeGetStreamStateFromSSMAndMux(new SSM());
+  const getStreamStateFromSSMAndMux = makeGetStreamStateFromSSMAndMux(new SSM({ credentials: credentialProvider }));
 
   const refresh = makeRefreshStreamState(getStreamStateFromSSMAndMux, dynamo, tableName);
 

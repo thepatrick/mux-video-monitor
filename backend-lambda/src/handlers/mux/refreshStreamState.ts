@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { isFailure, Result, successValue } from '../../helpers/result';
 import { StreamStateWithTitle } from './StreamState';
 import { writeStateToDynamo } from './writeStateToDynamo';
@@ -28,5 +28,3 @@ export const makeRefreshStreamState =
 
     return maybeStreamState;
   };
-
-

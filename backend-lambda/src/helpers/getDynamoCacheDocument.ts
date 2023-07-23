@@ -1,4 +1,5 @@
-import { AWSError, DynamoDB } from 'aws-sdk';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { failure, Result, success } from './result';
 
 export const getDynamoCacheDocument = async <T>(
@@ -8,24 +9,22 @@ export const getDynamoCacheDocument = async <T>(
   key: string,
 ): Promise<Result<Error, T | undefined>> => {
   try {
-    const getItemKey = DynamoDB.Converter.marshall({
+    const getItemKey = marshall({
       CacheKind: kind,
       CacheKey: key,
     });
 
-    const { Item } = await dynamo
-      .getItem({
-        TableName: tableName,
-        Key: getItemKey,
-      })
-      .promise();
+    const { Item } = await dynamo.getItem({
+      TableName: tableName,
+      Key: getItemKey,
+    });
 
     if (Item == null) {
       return success(undefined);
     }
 
-    return success(DynamoDB.Converter.unmarshall(Item) as unknown as T);
+    return success(unmarshall(Item) as unknown as T);
   } catch (error) {
-    return failure(error as AWSError);
+    return failure(error as Error);
   }
 };

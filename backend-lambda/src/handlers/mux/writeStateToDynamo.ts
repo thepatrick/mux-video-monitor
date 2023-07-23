@@ -1,14 +1,14 @@
-import { AWSError, DynamoDB } from 'aws-sdk';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { marshall } from '@aws-sdk/util-dynamodb';
 import { failure, Result, success } from '../../helpers/result';
 import { StreamStateDocument, StreamStateWithTitle } from './StreamState';
-
 
 export const writeStateToDynamo = async (
   dynamo: DynamoDB,
   tableName: string,
   roomId: string,
-  state: StreamStateWithTitle
-): Promise<Result<AWSError, StreamStateWithTitle>> => {
+  state: StreamStateWithTitle,
+): Promise<Result<Error, StreamStateWithTitle>> => {
   const item: StreamStateDocument = {
     CacheKind: 'stream',
     CacheKey: roomId,
@@ -17,14 +17,12 @@ export const writeStateToDynamo = async (
   };
 
   try {
-    await dynamo
-      .putItem({
-        TableName: tableName,
-        Item: DynamoDB.Converter.marshall(item),
-      })
-      .promise();
+    await dynamo.putItem({
+      TableName: tableName,
+      Item: marshall(item),
+    });
   } catch (error) {
-    return failure(error as AWSError);
+    return failure(error as Error);
   }
 
   return success(state);

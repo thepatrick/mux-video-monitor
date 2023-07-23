@@ -1,9 +1,9 @@
-import { SSM } from 'aws-sdk';
+import { SSM } from '@aws-sdk/client-ssm';
 import { failure, Result, success } from './result';
 
 export const maybeGetSecret = async (ssm: SSM, parameterName: string): Promise<Result<Error, string>> => {
   try {
-    const muxTokenSecretParameter = await ssm.getParameter({ Name: parameterName, WithDecryption: true }).promise();
+    const muxTokenSecretParameter = await ssm.getParameter({ Name: parameterName, WithDecryption: true });
 
     const muxTokenSecret = muxTokenSecretParameter.Parameter?.Value;
 
