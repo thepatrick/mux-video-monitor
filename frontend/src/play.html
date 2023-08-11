@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./css/attend.css" rel="stylesheet" />
+    <!-- <link href="./css/dynamic.css" rel="stylesheet" /> -->
+  </head>
+  <body class="min-h-screen bg-white">
+    <header class="container mx-auto px-4 py-8">
+      <div class="flex">
+        <a class="flex-initial text-2xl p-1 font-bold text-green-500 hover:bg-green-500 hover:text-white hover:rounded-lg" href="attend.html">🔙</a>
+        <h1 class="flex-auto text-4xl font-bold text-green-500">PyCon AU 2023</h1>
+      </div>
+      <h2 class="text-4xl font-thin text-green-500" id="room-name">Loading...</div>
+    </header>
+
+    <div id="video-row" class="w-full">
+        <video controls id="player" class="w-full h-full" tabindex="0"></video>
+    </div>
+      <div id="warning" style="display: none">
+        <p>⚠️ <small>Reason...</small></p>
+      </div>
+
+      <div id="offline" style="display: none">
+        <h1>⚠️</h1>
+        <p>Not live</p>
+      </div>
+
+
+
+    <div id="last-update">...</div>
+
+    <script type="module" src="./js/attend/play.ts"></script>
+  </body>
+</html>
