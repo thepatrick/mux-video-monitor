@@ -25,7 +25,7 @@ export const makeGetStreamStateFromSSMAndMux =
 
     const title = tags['multiview:title'] || roomId;
 
-    const demoResponse = demos[tags['multivew:demo'] || 'none'];
+    const demoResponse = demos[tags['multiview:demo'] || 'none'];
     if (demoResponse) {
       return success({ ...demoResponse, title });
     }
