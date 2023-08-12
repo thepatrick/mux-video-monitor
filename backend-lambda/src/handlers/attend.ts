@@ -75,5 +75,8 @@ export const attend: APIGatewayProxyHandlerV2 = catchErrors(async (event, contex
     return accessDenied();
   }
 
-  return response('Redirecting...', 302, { Location: destination }, [`NDV_AUD=${encodeURIComponent(token)}`]);
+  return response('Redirecting...', 302, {
+    Location: destination,
+    'Set-Cookie': `NDV_AUD=${encodeURIComponent(token)}`,
+  });
 });
