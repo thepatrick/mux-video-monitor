@@ -67,8 +67,8 @@ const createPlayer = async (id: string, defaultName: string) => {
   let currentStreamURL;
 
   const showError = (message: string) => {
-    offlineEl.style.display = '';
-    offlineEl.querySelector('p').textContent = `${message}`;
+    offlineEl.classList.remove('hidden');
+    offlineEl.querySelector('p.offline-title').textContent = `${message}`;
     videoContainer.classList.add('hidden');
   };
 
@@ -109,14 +109,14 @@ const createPlayer = async (id: string, defaultName: string) => {
     if (state.online === true) {
       video.style.display = '';
       videoContainer.classList.remove('hidden');
-      offlineEl.style.display = 'none';
+      offlineEl.classList.remove('hidden');
       if (force || state.stream !== currentStreamURL) {
         hls.loadSource(state.stream + '?cdn=fastly');
       }
 
       currentStreamURL = state.stream;
     } else {
-      showError(`Stream offline`);
+      showError(`This stream is offline right now.`);
 
       if (currentStreamURL) {
         video.pause();

@@ -9,28 +9,45 @@
   <body class="min-h-screen bg-white">
     <header class="container mx-auto px-4 py-8">
       <div class="flex">
-        <a class="flex-initial text-2xl p-1 font-bold text-green-500 hover:bg-green-500 hover:text-white hover:rounded-lg" href="attend.html">🔙</a>
+        <a
+          class="flex-initial text-2xl p-1 font-bold text-green-500 hover:bg-green-500 hover:text-white hover:rounded-lg"
+          href="attend.html"
+          >🔙</a
+        >
         <h1 class="flex-auto text-4xl font-bold text-green-500">PyCon AU 2023</h1>
       </div>
-      <h2 class="text-4xl font-thin text-green-500" id="room-name">Loading...</div>
+      <h2 class="text-4xl font-thin text-green-500" id="room-name">Loading...</h2>
     </header>
 
     <div id="video-row" class="w-full hidden">
-        <video controls id="player" class="w-full h-full" tabindex="0"></video>
+      <video controls id="player" class="w-full h-full" tabindex="0"></video>
     </div>
-      <div id="warning" style="display: none">
-        <p>⚠️ <small>Reason...</small></p>
+    <div id="warning" style="display: none">
+      <p>⚠️ <small>Reason...</small></p>
+    </div>
+
+    <div id="offline" class="hidden container mx-auto px-4 py-8">
+      <div class="flex space-x-4">
+        <h1 class="flex-initial text-4xl">⚠️</h1>
+        <div class="flex-auto space-y-4">
+          <p id="offline-title" class="text-4xl font-thin">This stream is offline right now.</p>
+          <p class="text-2xl font-thin">
+            You might want to check
+            <a href="http://2023.pycon.org.au/program/" class="text-blue-600 hover:underline">the program</a> or
+            <a href="attend.html" class="text-blue-600 hover:underline">the other streams</a>.
+          </p>
+          <p class="text-2xl font-thin">
+            If you're seeing this message when you expect the stream to be live for this room try refreshing this page.
+          </p>
+          <p class="text-2xl font-thin">
+            If you've had to refresh this page more than once, please let us know through Discord.
+          </p>
+        </div>
       </div>
-
-      <div id="offline" style="display: none">
-        <h1>⚠️</h1>
-        <p>Not live</p>
-      </div>
-
-
+    </div>
 
     <div id="last-update">...</div>
 
-    <!-- <script type="module" src="./js/attend/play.ts"></script> -->
+    <script type="module" src="./js/attend/play.ts"></script>
   </body>
 </html>
