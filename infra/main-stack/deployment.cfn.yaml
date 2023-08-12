@@ -22,37 +22,37 @@ Resources:
         - DomainName: !Sub "${AppDomain}"
           HostedZoneId: !Ref HostedZoneId
       ValidationMethod: "DNS"
-  
+
   CacheTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
-      - AttributeName: CacheKind
-        AttributeType: S
-      - AttributeName: CacheKey
-        AttributeType: S
+        - AttributeName: CacheKind
+          AttributeType: S
+        - AttributeName: CacheKey
+          AttributeType: S
       BillingMode: "PAY_PER_REQUEST"
       KeySchema:
-      - AttributeName: CacheKind
-        KeyType: HASH
-      - AttributeName: CacheKey
-        KeyType: RANGE
+        - AttributeName: CacheKind
+          KeyType: HASH
+        - AttributeName: CacheKey
+          KeyType: RANGE
 
   BackendLambdaRole:
     Type: "AWS::IAM::Role"
     Properties:
-      ManagedPolicyArns: 
-      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
-        Statement: 
-        - Principal:
-            Service: 
-            - "lambda.amazonaws.com"
-          Action:
-          - "sts:AssumeRole"
-          Effect: "Allow"
-  
+        Statement:
+          - Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+            Effect: "Allow"
+
   CanPopulateDynamoCache:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -60,14 +60,14 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Effect: "Allow"
-          Action:
-          - "dynamodb:Get*"
-          - "dynamodb:Put*"
-          Resource:
-          - !GetAtt "CacheTable.Arn"
+          - Effect: "Allow"
+            Action:
+              - "dynamodb:Get*"
+              - "dynamodb:Put*"
+            Resource:
+              - !GetAtt "CacheTable.Arn"
       Roles:
-      - !Ref "BackendLambdaRole"
+        - !Ref "BackendLambdaRole"
 
   CanReadFromSSM:
     Type: "AWS::IAM::Policy"
@@ -76,17 +76,18 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Effect: "Allow"
-          Action:
-          - "ssm:GetParameter"
-          - "ssm:GetParameters"
-          - "ssm:GetParametersByPath"
-          - "ssm:ListTagsForResource"
-          Resource:
-          - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/mux/*"
-          - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/ably/*"
+          - Effect: "Allow"
+            Action:
+              - "ssm:GetParameter"
+              - "ssm:GetParameters"
+              - "ssm:GetParametersByPath"
+              - "ssm:ListTagsForResource"
+            Resource:
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/mux/*"
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/ably/*"
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/multiview/attend/*"
       Roles:
-      - !Ref "BackendLambdaRole"
+        - !Ref "BackendLambdaRole"
 
   BackendGetStreamFn:
     Type: AWS::Lambda::Function
@@ -101,7 +102,7 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
-  
+
   BackendListRoomsFn:
     Type: AWS::Lambda::Function
     Properties:
@@ -115,7 +116,7 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
-  
+
   BackendRefreshFn:
     Type: AWS::Lambda::Function
     Properties:
@@ -144,7 +145,7 @@ Resources:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
           ABLY_SERVER_KEY: "/multiview/ably/server"
-  
+
   BackendAblyKeyFn:
     Type: AWS::Lambda::Function
     Properties:
@@ -160,32 +161,50 @@ Resources:
           CACHE_TABLE_NAME: !Ref "CacheTable"
           ABLY_CLIENT_KEY: "/multiview/ably/client"
 
+  BackendAttendFn:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BackendLambdaS3Bucket
+        S3Key: !Ref BackendLambdaS3Key
+      Handler: src/index.attend
+      Role: !GetAtt "BackendLambdaRole.Arn"
+      Runtime: "nodejs18.x"
+      Timeout: 25
+      Environment:
+        Variables:
+          CACHE_TABLE_NAME: !Ref "CacheTable"
+          ATTEND_JWT_PRIVATE_KEY_PATH: "/multiview/attend/ATTEND_JWT_ISSUER"
+          ATTEND_JWT_ISSUER: "{{resolve:ssm-secure:/multiview/attend/ATTEND_JWT_ISSUER:1}}"
+          ATTEND_JWT_AUDIENCE: "{{resolve:ssm-secure:/multiview/attend/ATTEND_JWT_ISSUER:1}}"
+
   BackendAPIRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Effect: "Allow"
-          Principal:
-            Service:
-            - "apigateway.amazonaws.com"
-          Action:
-          - "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
       Path: "/"
       Policies:
-      - PolicyName: LambdaAccess
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: "Allow"
-            Action: "lambda:*"
-            Resource:
-            - !GetAtt BackendGetStreamFn.Arn
-            - !GetAtt BackendListRoomsFn.Arn
-            - !GetAtt BackendRefreshFn.Arn
-            - !GetAtt BackendMuxFn.Arn
-            - !GetAtt BackendAblyKeyFn.Arn
+        - PolicyName: LambdaAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "lambda:*"
+                Resource:
+                  - !GetAtt BackendGetStreamFn.Arn
+                  - !GetAtt BackendListRoomsFn.Arn
+                  - !GetAtt BackendRefreshFn.Arn
+                  - !GetAtt BackendMuxFn.Arn
+                  - !GetAtt BackendAblyKeyFn.Arn
+                  - !GetAtt BackendAttendFn.Arn
 
   BackendAPI:
     Type: AWS::ApiGatewayV2::Api
@@ -196,15 +215,15 @@ Resources:
       CorsConfiguration:
         AllowCredentials: true
         AllowHeaders:
-        - "authorization"
-        - "content-type"
+          - "authorization"
+          - "content-type"
         AllowMethods:
-        - "GET"
-        - "POST"
+          - "GET"
+          - "POST"
         AllowOrigins:
-        - "http://localhost:1234"
-        - "https://nextdayvideo.com"
-        - !Sub "https://${AppDomain}"
+          - "http://localhost:1234"
+          - "https://nextdayvideo.com"
+          - !Sub "https://${AppDomain}"
 
   BackendGetStreamIntegration:
     Type: AWS::ApiGatewayV2::Integration
@@ -226,7 +245,7 @@ Resources:
       ApiId: !Ref BackendAPI
       RouteKey: GET /stream/{muxTokenId}
       Target: !Sub "integrations/${BackendGetStreamIntegration}"
-  
+
   BackendListRoomsIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -311,19 +330,42 @@ Resources:
       RouteKey: GET /ably
       Target: !Sub "integrations/${BackendAblyKeyIntegration}"
 
+  BackendAttendIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BackendAPI
+      Description: "Login to the attendee portal"
+      ConnectionType: INTERNET
+      CredentialsArn: !GetAtt "BackendAPIRole.Arn"
+      PassthroughBehavior: "WHEN_NO_MATCH"
+      TimeoutInMillis: 29000
+      IntegrationMethod: "POST"
+      IntegrationType: "AWS_PROXY"
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendAttendFn.Arn}/invocations"
+
+  BackendAttendRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref BackendAPI
+      RouteKey: GET /attend/${token}/${where}
+      Target: !Sub "integrations/${BackendAttendIntegration}"
+
   BackendAPIDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
-    - BackendGetStreamIntegration
-    - BackendGetStreamRoute
-    - BackendListRoomsRoute
-    - BackendListRoomsIntegration
-    - BackendRefreshRoute
-    - BackendRefreshIntegration
-    - BackendMuxRoute
-    - BackendMuxIntegration
-    - BackendAblyKeyRoute
-    - BackendAblyKeyIntegration
+      - BackendGetStreamIntegration
+      - BackendGetStreamRoute
+      - BackendListRoomsRoute
+      - BackendListRoomsIntegration
+      - BackendRefreshRoute
+      - BackendRefreshIntegration
+      - BackendMuxRoute
+      - BackendMuxIntegration
+      - BackendAblyKeyRoute
+      - BackendAblyKeyIntegration
+      - BackendAttendRoute
+      - BackendAttendIntegration
     Properties:
       Description: !Sub "${AWS::StackName} API Deployment"
       ApiId: !Ref BackendAPI
@@ -343,8 +385,8 @@ Resources:
       AccessControl: "PublicRead"
       BucketEncryption:
         ServerSideEncryptionConfiguration:
-        - ServerSideEncryptionByDefault:
-            SSEAlgorithm: AES256
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -355,8 +397,8 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub 'CloudFront OAI for ${AppDomain}'
-  
+        Comment: !Sub "CloudFront OAI for ${AppDomain}"
+
   FrontendWebsiteBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
@@ -364,56 +406,56 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Principal:
-            CanonicalUser: !GetAtt FrontendAccessIdentity.S3CanonicalUserId
-          Action:
-          - "s3:GetObject"
-          Resource:
-          - !Sub "arn:aws:s3:::${FrontendWebsite}/*"
-          Effect: "Allow"
-       
+          - Principal:
+              CanonicalUser: !GetAtt FrontendAccessIdentity.S3CanonicalUserId
+            Action:
+              - "s3:GetObject"
+            Resource:
+              - !Sub "arn:aws:s3:::${FrontendWebsite}/*"
+            Effect: "Allow"
+
   FrontendDistribution:
     Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
         Aliases:
-        - !Ref AppDomain
+          - !Ref AppDomain
         CacheBehaviors:
-        - AllowedMethods:
-          - "GET"
-          - "HEAD"
-          CachedMethods:
-          - "GET"
-          - "HEAD"
-          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
-          Compress: true
-          PathPattern: "*.html"
-          TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
-          ViewerProtocolPolicy: "redirect-to-https"
-        - AllowedMethods:
-          - "GET"
-          - "HEAD"
-          - "POST"
-          - "OPTIONS"
-          - "DELETE"
-          - "PUT"
-          - "PATCH"
-          CachedMethods:
-          - "GET"
-          - "HEAD"
-          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
-          Compress: true
-          PathPattern: "/api/*"
-          TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
-          ViewerProtocolPolicy: "redirect-to-https"
+          - AllowedMethods:
+              - "GET"
+              - "HEAD"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
+            Compress: true
+            PathPattern: "*.html"
+            TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
+            ViewerProtocolPolicy: "redirect-to-https"
+          - AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "POST"
+              - "OPTIONS"
+              - "DELETE"
+              - "PUT"
+              - "PATCH"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
+            Compress: true
+            PathPattern: "/api/*"
+            TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
+            ViewerProtocolPolicy: "redirect-to-https"
         DefaultRootObject: "index.html"
         DefaultCacheBehavior:
           AllowedMethods:
-          - "GET"
-          - "HEAD"
+            - "GET"
+            - "HEAD"
           CachedMethods:
-          - "GET"
-          - "HEAD"
+            - "GET"
+            - "HEAD"
           CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6" # "Managed-CachingOptimized"
           Compress: true
           TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
@@ -430,11 +472,11 @@ Resources:
               OriginProtocolPolicy: "https-only"
             DomainName: !Sub ${BackendAPI}.execute-api.${AWS::Region}.amazonaws.com
             Id: !Sub "${AWS::StackName}-BackendOrigin"
-        PriceClass: 'PriceClass_All'
+        PriceClass: "PriceClass_All"
         ViewerCertificate:
           AcmCertificateArn: !Ref "AppCertificate"
-          MinimumProtocolVersion: 'TLSv1.1_2016'
-          SslSupportMethod: 'sni-only'
+          MinimumProtocolVersion: "TLSv1.1_2016"
+          SslSupportMethod: "sni-only"
 
   AppDomainDNSv4:
     Type: AWS::Route53::RecordSet
