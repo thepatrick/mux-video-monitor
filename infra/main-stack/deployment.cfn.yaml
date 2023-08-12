@@ -12,6 +12,10 @@ Parameters:
     Type: String
   BackendLambdaS3Key:
     Type: String
+  AttendJWTIssuer:
+    Type: String
+  AttendJWTAudience:
+    Type: String
 
 Resources:
   AppCertificate:
@@ -175,8 +179,8 @@ Resources:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
           ATTEND_JWT_PRIVATE_KEY_PATH: "/multiview/attend/ATTEND_JWT_ISSUER"
-          ATTEND_JWT_ISSUER: "{{resolve:ssm-secure:/multiview/attend/ATTEND_JWT_ISSUER:1}}"
-          ATTEND_JWT_AUDIENCE: "{{resolve:ssm-secure:/multiview/attend/ATTEND_JWT_ISSUER:1}}"
+          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
+          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
   BackendAPIRole:
     Type: AWS::IAM::Role
