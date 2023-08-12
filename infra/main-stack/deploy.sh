@@ -18,6 +18,7 @@ aws cloudformation deploy \
   --parameter-override \
     "HostedZoneId=$HOSTED_ZONE_ID" \
     "AppDomain=$APP_DOMAIN" \
+    "AttendDomain=$ATTEND_DOMAIN" \
     "BackendLambdaS3Bucket=$BACKEND_LAMBDA_S3_BUCKET" \
     "BackendLambdaS3Key=$BACKEND_LAMBDA_S3_KEY" \
     "AttendJWTIssuer=$ATTEND_JWT_ISSUER" \

@@ -9,6 +9,7 @@ on:
 env:
   HOSTED_ZONE_ID: Z09102521YXWQT2ZKMPP7
   APP_DOMAIN: mux-monitor.aws.nextdayvideo.com.au
+  ATTEND_DOMAIN: live.aws.nextdayvideo.com.au
   AWS_DEFAULT_REGION: us-east-1
 
 jobs:
@@ -72,7 +73,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -141,7 +142,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@master

@@ -17,8 +17,8 @@ if (!ATTEND_JWT_ISSUER) {
 console.log(
   sign(
     {
-      iss: ATTEND_JWT_AUDIENCE,
-      aud: ATTEND_JWT_ISSUER,
+      iss: ATTEND_JWT_ISSUER,
+      aud: ATTEND_JWT_AUDIENCE,
       sub: 'generate-token.ts',
     },
     ATTEND_JWT_PRIVATE_KEY,

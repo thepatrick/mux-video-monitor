@@ -63,17 +63,17 @@ export const attend: APIGatewayProxyHandlerV2 = catchErrors(async (event, contex
     return notFound();
   }
 
-  let destination = '/attend.html';
+  const ourHost = event.headers['x-ndv-distribution'] ?? event.requestContext.domainName;
+
+  let destination = `https://${ourHost}/`;
   const where = event.pathParameters?.where;
   if (where !== undefined && where.length > 0) {
-    destination = `${event.requestContext.domainName}/play.html?where=${encodeURIComponent(where)}`;
+    destination = `https://${ourHost}/play.html?where=${encodeURIComponent(where)}`;
   }
 
   if (!(await verifyToken(token))) {
     return accessDenied();
   }
 
-  return response('Redirecting...', 302, { Location: destination }, [
-    `NDV_AUD=${encodeURIComponent(token)}; Secure; HttpOnly`,
-  ]);
+  return response('Redirecting...', 302, { Location: destination }, [`NDV_AUD=${encodeURIComponent(token)}`]);
 });
