@@ -69,7 +69,7 @@ const createPlayer = async (id: string, defaultName: string) => {
   const showError = (message: string) => {
     offlineEl.style.display = '';
     offlineEl.querySelector('p').textContent = `${message}`;
-    videoContainer.style.display = 'none';
+    videoContainer.classList.add('hidden');
   };
 
   let clearShowWarning;
@@ -108,7 +108,7 @@ const createPlayer = async (id: string, defaultName: string) => {
 
     if (state.online === true) {
       video.style.display = '';
-      videoContainer.style.display = '';
+      videoContainer.classList.remove('hidden');
       offlineEl.style.display = 'none';
       if (force || state.stream !== currentStreamURL) {
         hls.loadSource(state.stream + '?cdn=fastly');
