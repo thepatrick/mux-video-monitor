@@ -117,6 +117,9 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
+          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
+          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
+          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
   BackendListRoomsFn:
     Type: AWS::Lambda::Function
@@ -131,6 +134,9 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
+          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
+          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
+          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
   BackendRefreshFn:
     Type: AWS::Lambda::Function
@@ -145,6 +151,9 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
+          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
+          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
+          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
   BackendMuxFn:
     Type: AWS::Lambda::Function
@@ -175,6 +184,9 @@ Resources:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
           ABLY_CLIENT_KEY: "/multiview/ably/client"
+          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
+          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
+          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
   BackendAttendFn:
     Type: AWS::Lambda::Function
