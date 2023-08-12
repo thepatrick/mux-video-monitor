@@ -1,11 +1,16 @@
 import { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 
-export const response = (body: unknown, statusCode = 200): APIGatewayProxyStructuredResultV2 => ({
+export const response = (
+  body: unknown,
+  statusCode = 200,
+  headers?: APIGatewayProxyStructuredResultV2['headers'],
+  cookies?: string[],
+): APIGatewayProxyStructuredResultV2 => ({
   body: JSON.stringify(body),
   statusCode,
   isBase64Encoded: false,
-  headers: {},
-  cookies: [],
+  headers,
+  cookies,
 });
 
 export const accessDenied = (): APIGatewayProxyStructuredResultV2 =>
