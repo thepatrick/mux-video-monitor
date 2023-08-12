@@ -535,8 +535,16 @@ Resources:
         MaxTTL: 0
         MinTTL: 0
         ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: false
+          EnableAcceptEncodingBrotli: false
           CookiesConfig:
             CookieBehavior: all
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - authorization
+          QueryStringsConfig:
+            QueryStringBehavior: all
 
   AttendDistribution:
     Type: "AWS::CloudFront::Distribution"
