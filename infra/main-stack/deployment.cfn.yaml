@@ -514,6 +514,30 @@ Resources:
       Name: !Ref "AppDomain"
       Type: "AAAA"
 
+  AttendResponseHeaders:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: "AttendResponseHeaders"
+        CustomHeadersConfig:
+          Items:
+            - Header: server
+              Override: true
+              Value: "ndv"
+
+  AttendAPICachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: AttendAPICachePolicy
+        Comment: !Sub "Cache policy for ${AttendDomain}"
+        DefaultTTL: 0
+        MaxTTL: 0
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: all
+
   AttendDistribution:
     Type: "AWS::CloudFront::Distribution"
     Properties:
@@ -532,6 +556,7 @@ Resources:
             PathPattern: "*.html"
             TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
             ViewerProtocolPolicy: "redirect-to-https"
+            ResponseHeadersPolicyId: !Ref "AttendResponseHeaders"
           - AllowedMethods:
               - "GET"
               - "HEAD"
@@ -543,11 +568,12 @@ Resources:
             CachedMethods:
               - "GET"
               - "HEAD"
-            CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # "Managed-CachingDisabled"
+            CachePolicyId: !Ref "AttendAPICachePolicy"
             Compress: true
             PathPattern: "/api/*"
             TargetOriginId: !Sub "${AWS::StackName}-BackendOrigin"
             ViewerProtocolPolicy: "redirect-to-https"
+            ResponseHeadersPolicyId: !Ref "AttendResponseHeaders"
         DefaultRootObject: "attend.html"
         DefaultCacheBehavior:
           AllowedMethods:
@@ -560,6 +586,7 @@ Resources:
           Compress: true
           TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
           ViewerProtocolPolicy: "redirect-to-https"
+          ResponseHeadersPolicyId: !Ref "AttendResponseHeaders"
         Enabled: true
         HttpVersion: "http2"
         IPV6Enabled: true
