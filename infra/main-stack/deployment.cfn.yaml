@@ -352,7 +352,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref BackendAPI
-      RouteKey: GET /attend/${token}/${where}
+      RouteKey: GET /attend/{token}/{where}
       Target: !Sub "integrations/${BackendAttendIntegration}"
 
   BackendAPIDeployment:
