@@ -1,18 +1,21 @@
-import { createSetTitleLabel } from './dynamic/createSetTitleLabel';
-import { fetchState, MuxStreamState } from './fetchState';
-import { mountSetupAudioMeterForMultiview } from './dynamic/mountSetupAudioMeterForMultiview';
+import { createAblySingleStream } from '../ably/createAblyOrchestrator';
+import { createSetTitleLabel } from '../dynamic/createSetTitleLabel';
+import { Room, fetchRooms } from '../fetchRooms';
 import Hls from 'hls.js';
-import { listenForAblyNotifications } from './ably/listenForAblyNotifications';
-import { nowIs } from './nowIs';
-import { createTextThing } from './createTextThing';
+import { MuxStreamState, fetchState } from '../fetchState';
+import { nowIs } from '../nowIs';
+import { createTextThing } from '../createTextThing';
 
-const run = async () => {
+const createPlayer = async (id: string, defaultName: string) => {
+  if (!Hls.isSupported()) {
+    window.location.href = '/attend.html?err=hls-not-supported';
+    return;
+  }
   if (!Hls.isSupported()) {
     alert('This multiview is only intended for use with hls.js, sorry');
   }
 
-  const video = document.getElementById('azuremediaplayer') as HTMLVideoElement;
-  const vuMeter = document.getElementById('vu-meter') as HTMLDivElement;
+  const video = document.getElementById('player') as HTMLVideoElement;
   const videoContainer = document.getElementById('video-row') as HTMLDivElement;
 
   const warningEl = document.getElementById('warning');
@@ -21,8 +24,6 @@ const run = async () => {
   const lastUpdateEl = document.getElementById('last-update') as HTMLDivElement;
 
   const lastUpdate = createTextThing(lastUpdateEl);
-
-  mountSetupAudioMeterForMultiview(video, vuMeter, document.body as HTMLBodyElement);
 
   const params = new URL(location.href).searchParams;
   const hlsDebug = params.get('hlsdebug') === 'true';
@@ -60,26 +61,22 @@ const run = async () => {
   video.addEventListener('pause', updateLastUpdate);
   hls.on(Hls.Events.BUFFER_APPENDING, () => updateLastUpdate());
 
-  const id = params.get('id');
-  if (!id) {
-    throw new Error('ID not set');
-  }
-
   const setTitleLabel = createSetTitleLabel(roomNameEl);
 
-  let currentRoomName = id;
+  let currentRoomName = defaultName;
   let currentStreamURL;
 
   const showError = (message: string) => {
-    offlineEl.style.display = '';
-    offlineEl.querySelector('p').textContent = `${message}`;
-    videoContainer.style.display = 'none';
+    offlineEl.classList.remove('hidden');
+    offlineEl.querySelector('p#offline-title').textContent = `${message}`;
+    videoContainer.classList.add('hidden');
   };
 
   let clearShowWarning;
   const showWarning = (message: string) => {
     warningEl.style.display = '';
     warningEl.querySelector('small').textContent = `${message} (${nowIs()})`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     clearTimeout(clearShowWarning);
     clearShowWarning = setTimeout(() => {
       warningEl.style.display = 'none';
@@ -111,15 +108,15 @@ const run = async () => {
 
     if (state.online === true) {
       video.style.display = '';
-      videoContainer.style.display = '';
-      offlineEl.style.display = 'none';
+      videoContainer.classList.remove('hidden');
+      offlineEl.classList.remove('hidden');
       if (force || state.stream !== currentStreamURL) {
         hls.loadSource(state.stream + '?cdn=fastly');
       }
 
       currentStreamURL = state.stream;
     } else {
-      showError(`Stream offline`);
+      showError(`This stream is offline right now.`);
 
       if (currentStreamURL) {
         video.pause();
@@ -213,14 +210,49 @@ const run = async () => {
     }
   });
 
-  listenForAblyNotifications(
-    id,
-    (title, streamURL) => refreshFromState(false, { ok: true, online: true, stream: streamURL, title }),
-    (title) => refreshFromState(false, { ok: true, online: false, title }),
-  );
+  await createAblySingleStream(({ roomId, state, streamURL, title }) => {
+    if (roomId !== id) {
+      // Ignore this message, it's not for this room
+      return;
+    }
+    if (state === 'active') {
+      void refreshFromState(false, { ok: true, online: true, stream: streamURL, title });
+    } else {
+      void refreshFromState(false, { ok: true, online: false, title });
+    }
+  });
 
   lastUpdate('Starting up...');
   await refreshFromState(false);
+};
+
+const run = async () => {
+  console.log('hi');
+
+  const params = new URLSearchParams(location.search.slice(1));
+
+  const roomsResponse = await fetchRooms();
+
+  if (!roomsResponse.ok) {
+    alert('Could not get rooms. Try again.');
+    return;
+  }
+
+  const rooms: Room[] = roomsResponse.rooms;
+  if (!params.has('stream')) {
+    window.location.href = '/attend.html?err=not-found';
+  }
+
+  const roomId = params.get('stream');
+  const room = rooms.find(({ id }) => id === roomId);
+
+  if (!room) {
+    window.location.href = '/attend.html?err=not-found';
+  }
+
+  // TODO: Unmute button!
+
+  await createPlayer(room.id, room.name);
 };
 
 run().catch((err) => console.error('Failed somewhere', err));

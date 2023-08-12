@@ -26,3 +26,21 @@ export const createAblyOrchestrator = async (streamFrames: HTMLIFrameElement[]) 
     });
   }
 };
+
+export const createAblySingleStream = async (update: (message: AblyStreamUpdate) => void) => {
+  const ably = await launchAbly();
+  if (ably.ok === false) {
+    window.location.href = '/attend.html?err=ably';
+  } else {
+    const channel = ably.client.channels.get('mux-monitor.aws.nextdayvideo.com.au');
+
+    await channel.subscribe(({ name, data }) => {
+      if (name === 'stream' && data != null && typeof data === 'object') {
+        const f = data as unknown as AblyStreamUpdate;
+        update(f);
+      } else {
+        console.debug('Ignoring message from ably', name, data);
+      }
+    });
+  }
+};

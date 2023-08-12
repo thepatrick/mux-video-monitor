@@ -45,10 +45,13 @@ export const elm =
     return base;
   };
 
-const a = elm('a');
+export const a = elm('a');
 
-export const anchor = <T extends Node>(href: string, childOrChildren: ElmChildren<T>): HTMLAnchorElement =>
-  a(childOrChildren, { href });
+export const anchor = <T extends Node>(
+  href: string,
+  childOrChildren: ElmChildren<T>,
+  classList?: string[],
+): HTMLAnchorElement => a(childOrChildren, { href, class: classList?.join(' ') });
 
 export const listItem = elm('li');
 export const div = elm('div');
