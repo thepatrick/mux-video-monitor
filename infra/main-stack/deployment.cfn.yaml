@@ -178,7 +178,7 @@ Resources:
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
-          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_ISSUER"
+          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
           ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
           ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
