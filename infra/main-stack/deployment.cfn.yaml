@@ -558,7 +558,7 @@ Resources:
             - "HEAD"
           CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6" # "Managed-CachingOptimized"
           Compress: true
-          TargetOriginId: !Sub "${AWS::StackName}-AttendOrigin"
+          TargetOriginId: !Sub "${AWS::StackName}-FrontendOrigin"
           ViewerProtocolPolicy: "redirect-to-https"
         Enabled: true
         HttpVersion: "http2"
