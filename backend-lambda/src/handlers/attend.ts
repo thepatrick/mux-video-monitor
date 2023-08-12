@@ -78,5 +78,6 @@ export const attend: APIGatewayProxyHandlerV2 = catchErrors(async (event, contex
   return response('Redirecting...', 302, {
     Location: destination,
     'Set-Cookie': `NDV_AUD=${encodeURIComponent(token)}`,
+    'Cache-Control': 'no-cache="Set-Cookie"',
   });
 });

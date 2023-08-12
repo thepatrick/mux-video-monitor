@@ -18,10 +18,16 @@ export const listRooms: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     throw maybeRooms.value;
   }
 
-  return response({
-    ok: true,
-    rooms: maybeRooms.value,
-  });
+  return response(
+    {
+      ok: true,
+      rooms: maybeRooms.value,
+    },
+    200,
+    {
+      'Cache-Control': 'no-cache',
+    },
+  );
 });
 
 if (process.env.TEST_HANDLER === 'getRoomsFromDynamo') {

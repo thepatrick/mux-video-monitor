@@ -25,5 +25,7 @@ export const ablyKey: APIGatewayProxyHandlerV2 = catchErrors(async (event, conte
 
   const key = successValue(maybeKey);
 
-  return response({ ok: true, key });
+  return response({ ok: true, key }, 200, {
+    'Cache-Control': 'no-cache',
+  });
 });

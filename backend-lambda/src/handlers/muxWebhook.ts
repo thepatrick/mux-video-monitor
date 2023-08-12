@@ -60,5 +60,7 @@ export const muxWebhook: APIGatewayProxyHandlerV2 = catchErrors(async (event, co
     }
   }
 
-  return response({ ok: true });
+  return response({ ok: true }, 200, {
+    'Cache-Control': 'no-cache',
+  });
 });
