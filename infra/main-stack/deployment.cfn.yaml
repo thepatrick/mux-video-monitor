@@ -572,7 +572,7 @@ Resources:
               OriginProtocolPolicy: "https-only"
             DomainName: !Sub ${BackendAPI}.execute-api.${AWS::Region}.amazonaws.com
             Id: !Sub "${AWS::StackName}-BackendOrigin"
-            OriginCustomHeader:
+            OriginCustomHeaders:
               - HeaderName: "x-ndv-distribution"
                 HeaderValue: !Ref "AttendDomain"
         PriceClass: "PriceClass_All"
