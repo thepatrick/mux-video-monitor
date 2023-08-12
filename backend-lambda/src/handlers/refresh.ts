@@ -1,15 +1,23 @@
+import { SSM } from '@aws-sdk/client-ssm';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { response } from '../helpers/response';
-
-import { isFailure } from '../helpers/result';
 import { catchErrors } from '../helpers/catchErrors';
+import { credentialProvider } from '../helpers/credentialProvider';
+import { accessDenied, response } from '../helpers/response';
+import { isFailure } from '../helpers/result';
+import { verifyTokenCookie } from '../helpers/verifyTokenCookie';
 import { getRoomsFromDynamo } from './rooms/getRoomsFromDynamo';
 
 export const TableName = process.env.CACHE_TABLE_NAME;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const refresh: APIGatewayProxyHandlerV2 = catchErrors(async (event, context) => {
   if (!TableName) {
     throw new Error('CACHE_TABLE_NAME not set');
+  }
+  const ssm = new SSM({ credentials: credentialProvider });
+
+  if (!(await verifyTokenCookie(ssm, event))) {
+    return accessDenied();
   }
 
   const maybeRooms = await getRoomsFromDynamo(TableName, true);
