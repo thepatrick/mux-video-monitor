@@ -13,7 +13,7 @@ interface AblyKeyError {
 const fetchAblyKey = async (): Promise<AblyKeyOk | AblyKeyError> => {
   try {
     const before = Date.now();
-    const fetchResponse = await fetch(`/api/ably`);
+    const fetchResponse = await fetch(`/api/ably`, { credentials: 'include' });
 
     // TODO: Validate state
     const state = (await fetchResponse.json()) as AblyKeyOk | AblyKeyError;

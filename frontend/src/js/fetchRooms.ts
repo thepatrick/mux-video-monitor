@@ -33,7 +33,7 @@ interface FetchRoomsResponseError {
 export const fetchRooms = async (): Promise<FetchRoomsOk | FetchRoomsError> => {
   try {
     const before = Date.now();
-    const fetchResponse = await fetch(`/api/stream?${nanoid()}`);
+    const fetchResponse = await fetch(`/api/stream?${nanoid()}`, { credentials: 'include' });
     const rooms = (await fetchResponse.json()) as FetchRoomsResponseOk | FetchRoomsResponseError;
 
     if (rooms.ok === false) {
