@@ -68,7 +68,7 @@ const createPlayer = async (id: string, defaultName: string) => {
 
   const showError = (message: string) => {
     offlineEl.classList.remove('hidden');
-    offlineEl.querySelector('p.offline-title').textContent = `${message}`;
+    offlineEl.querySelector('p#offline-title').textContent = `${message}`;
     videoContainer.classList.add('hidden');
   };
 
