@@ -12,6 +12,7 @@ const createRoomLink = (id: string, label: string): HTMLLIElement =>
   ]);
 
 const run = async () => {
+  const loading = document.querySelector('div#loading');
   const roomList = document.getElementById('room-list');
 
   const appendChildToRoomList = appendChild(roomList);
@@ -32,6 +33,8 @@ const run = async () => {
   for (const { id, name } of rooms) {
     appendChildToRoomList(createRoomLink(id, name));
   }
+
+  loading.classList.add('hidden');
 };
 
 run().catch((err) => console.error('Failed somewhere', err));
