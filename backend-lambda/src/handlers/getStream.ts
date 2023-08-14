@@ -2,9 +2,8 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { catchErrors } from '../helpers/catchErrors';
 import { accessDenied, notFound, response } from '../helpers/response';
 import { isFailure, successValue } from '../helpers/result';
-import { ssm } from '../helpers/ssm';
 import { verifyTokenCookie } from '../helpers/verifyTokenCookie';
-import { TableName } from './listRooms';
+import { TableName } from '../helpers/TableName';
 import { getStreamStateFromDynamo } from './mux/getStreamStateFromDynamo';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,7 +12,7 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  if (!(await verifyTokenCookie(ssm, event))) {
+  if (!(await verifyTokenCookie(event))) {
     return accessDenied();
   }
 

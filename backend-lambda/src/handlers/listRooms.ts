@@ -2,11 +2,9 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { catchErrors } from '../helpers/catchErrors';
 import { accessDenied, response } from '../helpers/response';
 import { isFailure } from '../helpers/result';
-import { ssm } from '../helpers/ssm';
 import { verifyTokenCookie } from '../helpers/verifyTokenCookie';
 import { getRoomsFromDynamo } from './rooms/getRoomsFromDynamo';
-
-export const TableName = process.env.CACHE_TABLE_NAME;
+import { TableName } from '../helpers/TableName';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const listRooms: APIGatewayProxyHandlerV2 = catchErrors(async (event, context) => {
@@ -14,7 +12,7 @@ export const listRooms: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  if (!(await verifyTokenCookie(ssm, event))) {
+  if (!(await verifyTokenCookie(event))) {
     return accessDenied();
   }
 

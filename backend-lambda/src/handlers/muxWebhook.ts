@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { invalidRequest, notFound, response } from '../helpers/response';
 import { catchErrors } from '../helpers/catchErrors';
-import { TableName } from './listRooms';
+import { TableName } from '../helpers/TableName';
 import { isMuxWebhookBody } from '../types.guard';
 import { parseBody } from '../helpers/parseBody';
 import { isFailure, successValue } from '../helpers/result';

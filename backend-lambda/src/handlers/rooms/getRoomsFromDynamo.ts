@@ -1,16 +1,13 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { isFailure, Result, success, successValue } from '../../helpers/result';
 import { getRoomsFromSSM } from './getRoomsFromSSM';
 import { makeRefresh } from './writeRoomsToDynamo';
 import { Room, RoomDocument } from './Room';
 import { getDynamoCacheDocument } from '../../helpers/getDynamoCacheDocument';
-import { credentialProvider } from '../../helpers/credentialProvider';
+import { dynamo } from '../../helpers/dynamo';
 
 export const ageLimit = 30 * 60 * 1000;
 
 export const getRoomsFromDynamo = async (tableName: string, forceRefresh: boolean): Promise<Result<Error, Room[]>> => {
-  const dynamo = new DynamoDB({ credentials: credentialProvider });
-
   const refresh = makeRefresh(getRoomsFromSSM, dynamo, tableName);
 
   if (forceRefresh) {

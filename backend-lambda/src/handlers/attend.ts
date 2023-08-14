@@ -19,7 +19,7 @@ export const attend: APIGatewayProxyHandlerV2 = catchErrors(async (event, contex
     destination = `https://${ourHost}/play.html?where=${encodeURIComponent(where)}`;
   }
 
-  if (!(await verifyToken(ssm, token))) {
+  if (!(await verifyToken(token))) {
     return accessDenied();
   }
 

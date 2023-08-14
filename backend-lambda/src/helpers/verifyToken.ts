@@ -1,14 +1,13 @@
 import { verify } from 'jsonwebtoken';
 import { isDecodedJWT } from '../types.guard';
-import { SSM } from '@aws-sdk/client-ssm';
-import { maybeGetSecret } from './maybeGetSecret';
 import { isFailure, successValue } from './result';
+import { getCachedSecret } from './getCachedSecret';
 
 const ATTEND_JWT_PRIVATE_KEY = process.env.ATTEND_JWT_PRIVATE_KEY;
 const ATTEND_JWT_AUDIENCE = process.env.ATTEND_JWT_AUDIENCE;
 const ATTEND_JWT_ISSUER = process.env.ATTEND_JWT_ISSUER;
 
-export const verifyToken = async (ssm: SSM, token: string): Promise<boolean> => {
+export const verifyToken = async (token: string, forceRefreshKey = false): Promise<boolean> => {
   if (!ATTEND_JWT_PRIVATE_KEY) {
     console.log('ATTEND_JWT_PRIVATE_KEY not set');
     return false;
@@ -22,7 +21,7 @@ export const verifyToken = async (ssm: SSM, token: string): Promise<boolean> => 
     return false;
   }
 
-  const maybePrivateKey = await maybeGetSecret(ssm, ATTEND_JWT_PRIVATE_KEY);
+  const maybePrivateKey = await getCachedSecret(ATTEND_JWT_PRIVATE_KEY, forceRefreshKey);
 
   if (isFailure(maybePrivateKey)) {
     console.log(`Unable to get ${ATTEND_JWT_PRIVATE_KEY}`, maybePrivateKey.value);
