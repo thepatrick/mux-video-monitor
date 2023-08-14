@@ -188,6 +188,15 @@ Resources:
           ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
           ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
 
+  BackendAblyKeyFnAlias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      Description: "Returns the Ably client key"
+      FunctionName: !Ref BackendAblyKeyFn.Arn
+      FunctionVersion: $LATEST
+      Name: BackendAblyKey
+      # ProvisionedConcurrencyConfig: ProvisionedConcurrencyConfiguration
+
   BackendAttendFn:
     Type: AWS::Lambda::Function
     Properties:
