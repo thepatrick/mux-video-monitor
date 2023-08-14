@@ -19,6 +19,8 @@ Parameters:
   AttendJWTAudience:
     Type: String
 
+Transform: AWS::Serverless-2016-10-31
+
 Resources:
   AppCertificate:
     Type: "AWS::CertificateManager::Certificate"
@@ -180,6 +182,23 @@ Resources:
       Role: !GetAtt "BackendLambdaRole.Arn"
       Runtime: "nodejs18.x"
       Timeout: 25
+      Environment:
+        Variables:
+          CACHE_TABLE_NAME: !Ref "CacheTable"
+          ABLY_CLIENT_KEY: "/multiview/ably/client"
+          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
+          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
+          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
+
+  BackendAblyKeySlFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/index.ablyKey
+      Runtime: nodejs18.x
+      CodeUri: !Sub "s3://${BackendLambdaS3Bucket}/${BackendLambdaS3Key}"
+      Role: !GetAtt "BackendLambdaRole.Arn"
+      Timeout: 25
+      AutoPublishAlias: live
       Environment:
         Variables:
           CACHE_TABLE_NAME: !Ref "CacheTable"
