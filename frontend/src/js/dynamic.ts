@@ -10,7 +10,7 @@ import { isFailure, successValue } from './helpers/result';
 
 const run = async () => {
   if (!Hls.isSupported()) {
-    alert('This multiview is only intended for use with hls.js, sorry');
+    window.location.href = '/hls-not-supported.html';
   }
 
   const video = document.getElementById('azuremediaplayer') as HTMLVideoElement;

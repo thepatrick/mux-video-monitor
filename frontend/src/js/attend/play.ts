@@ -11,11 +11,8 @@ import { NotFound } from '../helpers/NotFound';
 
 const createPlayer = async (id: string, defaultName: string): Promise<Result<Error, void>> => {
   if (!Hls.isSupported()) {
-    window.location.href = '/attend.html?err=hls-not-supported';
+    window.location.href = '/hls-not-supported.html';
     return;
-  }
-  if (!Hls.isSupported()) {
-    alert('This multiview is only intended for use with hls.js, sorry');
   }
 
   const video = document.getElementById('player') as HTMLVideoElement;
