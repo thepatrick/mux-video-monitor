@@ -354,7 +354,7 @@ Resources:
       IntegrationMethod: "POST"
       IntegrationType: "AWS_PROXY"
       PayloadFormatVersion: "2.0"
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendAblyKeySlFn.Arn}/invocations"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendAblyKeySlFn.Arn}:live/invocations"
 
   BackendAblyKeyRoute:
     Type: AWS::ApiGatewayV2::Route
