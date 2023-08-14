@@ -1,4 +1,6 @@
 import { nanoid } from 'nanoid';
+import { Result, failure, success } from './helpers/result';
+import { AccessDenied } from './helpers/AccessDenied';
 
 interface MuxStreamStateOnline {
   ok: true;
@@ -18,9 +20,9 @@ interface MuxStreamStateError {
   error: string;
 }
 
-export type MuxStreamState = MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError;
+export type MuxStreamState = MuxStreamStateOnline | MuxStreamStateOffline;
 
-export const fetchState = async (id: string): Promise<MuxStreamState> => {
+export const fetchState = async (id: string): Promise<Result<Error, MuxStreamState>> => {
   try {
     const before = Date.now();
     const fetchResponse = await fetch(`/api/stream/${encodeURIComponent(id)}?${nanoid()}`, { credentials: 'include' });
@@ -28,12 +30,19 @@ export const fetchState = async (id: string): Promise<MuxStreamState> => {
     // TODO: Validate state
     const state = (await fetchResponse.json()) as MuxStreamStateOnline | MuxStreamStateOffline | MuxStreamStateError;
 
+    if (state.ok === false) {
+      if (fetchResponse.status === 403) {
+        throw new AccessDenied(state.error, fetchResponse.status);
+      }
+      throw new Error(state.error);
+    }
+
     const totalTime = Date.now() - before;
 
     console.log(`[%s] Got state in %dms`, id, totalTime, state);
 
-    return state;
+    return success(state);
   } catch (err) {
-    return { ok: false, error: (err as Error).message };
+    return failure(err as Error);
   }
 };

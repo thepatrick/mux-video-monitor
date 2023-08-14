@@ -5,6 +5,8 @@ import Hls from 'hls.js';
 import { listenForAblyNotifications } from './ably/listenForAblyNotifications';
 import { nowIs } from './nowIs';
 import { createTextThing } from './createTextThing';
+import { AccessDenied } from './helpers/AccessDenied';
+import { isFailure, successValue } from './helpers/result';
 
 const run = async () => {
   if (!Hls.isSupported()) {
@@ -97,14 +99,23 @@ const run = async () => {
 
     setTitleLabel({ loading: true, room: currentRoomName });
 
-    const state = ablyState || (await fetchState(id));
+    let state = ablyState;
 
-    if (state.ok === false) {
-      setTitleLabel({ error: state.error, room: currentRoomName });
-      refreshingFromState = false;
-      return;
+    if (ablyState === undefined) {
+      const maybeState = await fetchState(id);
+      if (isFailure(maybeState)) {
+        if (maybeState.value instanceof AccessDenied) {
+          window.location.href = `/access-denied.html`;
+          return;
+        }
+
+        setTitleLabel({ error: maybeState.value.message, room: currentRoomName });
+        refreshingFromState = false;
+        return;
+      } else {
+        state = successValue(maybeState);
+      }
     }
-
     currentRoomName = state.title;
 
     setTitleLabel({ live: state.online, room: currentRoomName });

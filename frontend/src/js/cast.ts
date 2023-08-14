@@ -1,5 +1,7 @@
 import { createSetTitleLabel } from './dynamic/createSetTitleLabel';
-import { fetchState } from './fetchState';
+import { MuxStreamState, fetchState } from './fetchState';
+import { AccessDenied } from './helpers/AccessDenied';
+import { isFailure, successValue } from './helpers/result';
 
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
@@ -72,12 +74,20 @@ const run = async () => {
 
     setTitleLabel({ loading: true, room: currentRoomName });
 
-    const state = await fetchState(id);
+    let state: MuxStreamState;
 
-    if (state.ok === false) {
-      setTitleLabel({ error: state.error, room: currentRoomName });
+    const maybeState = await fetchState(id);
+    if (isFailure(maybeState)) {
+      if (maybeState.value instanceof AccessDenied) {
+        window.location.href = `/access-denied.html`;
+        return;
+      }
+
+      setTitleLabel({ error: maybeState.value.message, room: currentRoomName });
       refreshingFromState = false;
       return;
+    } else {
+      state = successValue(maybeState);
     }
 
     currentRoomName = state.title;

@@ -96,12 +96,22 @@ const createPlayer = async (id: string, defaultName: string) => {
 
     setTitleLabel({ loading: true, room: currentRoomName });
 
-    const state = ablyState || (await fetchState(id));
+    let state = ablyState;
 
-    if (state.ok === false) {
-      setTitleLabel({ error: state.error, room: currentRoomName });
-      refreshingFromState = false;
-      return;
+    if (ablyState === undefined) {
+      const maybeState = await fetchState(id);
+      if (isFailure(maybeState)) {
+        if (maybeState.value instanceof AccessDenied) {
+          window.location.href = `/access-denied.html`;
+          return;
+        }
+
+        setTitleLabel({ error: maybeState.value.message, room: currentRoomName });
+        refreshingFromState = false;
+        return;
+      } else {
+        state = successValue(maybeState);
+      }
     }
 
     currentRoomName = state.title;
@@ -212,7 +222,7 @@ const createPlayer = async (id: string, defaultName: string) => {
     }
   });
 
-  await createAblySingleStream(({ roomId, state, streamURL, title }) => {
+  const ably = await createAblySingleStream(({ roomId, state, streamURL, title }) => {
     if (roomId !== id) {
       // Ignore this message, it's not for this room
       return;
@@ -223,6 +233,10 @@ const createPlayer = async (id: string, defaultName: string) => {
       void refreshFromState(false, { ok: true, online: false, title });
     }
   });
+
+  if (isFailure(ably)) {
+    return ably;
+  }
 
   lastUpdate('Starting up...');
   await refreshFromState(false);
@@ -237,8 +251,7 @@ const run = async () => {
 
   if (isFailure(roomsResponse)) {
     if (roomsResponse.value instanceof AccessDenied) {
-      window.location.href = '/access-denied.html';
-      return;
+      throw roomsResponse.value;
     }
     alert('Could not get rooms. Try again.');
     return;
@@ -258,7 +271,15 @@ const run = async () => {
 
   // TODO: Unmute button!
 
-  await createPlayer(room.id, room.name);
+  const player = await createPlayer(room.id, room.name);
+  if (isFailure(player)) {
+    throw player.value;
+  }
 };
 
-run().catch((err) => console.error('Failed somewhere', err));
+run().catch((err) => {
+  if (err instanceof AccessDenied) {
+    window.location.href = '/access-denied.html';
+  }
+  console.error('Failed somewhere', err);
+});

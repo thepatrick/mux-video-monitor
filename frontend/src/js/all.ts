@@ -129,7 +129,10 @@ const run = async () => {
     }
   }
 
-  await createAblyOrchestrator(streamFrames);
+  const ably = await createAblyOrchestrator(streamFrames);
+  if (isFailure(ably)) {
+    throw ably.value;
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   createStartAudioHopper(document.body, createAudioController(streamFrames, rotateSpeed * 1000));
