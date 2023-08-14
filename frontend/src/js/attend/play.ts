@@ -7,6 +7,7 @@ import { MuxStreamState, fetchState } from '../fetchState';
 import { AccessDenied } from '../helpers/AccessDenied';
 import { Result, isFailure, success, successValue } from '../helpers/result';
 import { nowIs } from '../nowIs';
+import { NotFound } from '../helpers/NotFound';
 
 const createPlayer = async (id: string, defaultName: string): Promise<Result<Error, void>> => {
   if (!Hls.isSupported()) {
@@ -102,8 +103,11 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
       const maybeState = await fetchState(id);
       if (isFailure(maybeState)) {
         if (maybeState.value instanceof AccessDenied) {
-          window.location.href = `/access-denied.html`;
+          window.location.href = '/access-denied.html';
           return;
+        }
+        if (maybeState.value instanceof NotFound) {
+          window.location.href = '/stream-not-found.html';
         }
 
         setTitleLabel({ error: maybeState.value.message, room: currentRoomName });
@@ -261,14 +265,14 @@ const run = async () => {
 
   const rooms = successValue(roomsResponse);
   if (!params.has('stream')) {
-    window.location.href = '/attend.html?err=not-found';
+    window.location.href = '/stream-not-found.html';
   }
 
   const roomId = params.get('stream');
   const room = rooms.find(({ id }) => id === roomId);
 
   if (!room) {
-    window.location.href = '/attend.html?err=not-found';
+    window.location.href = '/stream-not-found.html';
   }
 
   // TODO: Unmute button!
