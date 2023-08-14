@@ -81,12 +81,12 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
 
   let clearShowWarning;
   const showWarning = (message: string) => {
-    warningEl.style.display = '';
-    warningEl.querySelector('small').textContent = `${message} (${nowIs()})`;
+    warningEl.classList.remove('hidden');
+    warningEl.querySelector('p').textContent = `${message} (${nowIs()})`;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     clearTimeout(clearShowWarning);
     clearShowWarning = setTimeout(() => {
-      warningEl.style.display = 'none';
+      warningEl.classList.add('hidden');
     }, 30000);
   };
 

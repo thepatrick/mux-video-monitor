@@ -19,6 +19,15 @@
       <h2 class="text-4xl font-thin text-green-500" id="room-name">Loading...</h2>
     </header>
 
+    <div id="warning" class="hidden p-4 bg-yellow-50 font-light">
+      <div class="flex space-x-4">
+        <h1 class="flex-initial text-2xl">⚠️</h1>
+        <div class="flex-auto space-y-4">
+          <p class="text-2xl font-thin">Something is a bit wonky right now</p>
+        </div>
+      </div>
+    </div>
+
     <div id="video-row" class="relative w-full hidden">
       <video controls id="player" class="w-full h-full" tabindex="0"></video>
       <div id="mute-button" class="flex flex-col h-full w-full absolute top-0 left-0 justify-center">
@@ -31,10 +40,6 @@
           </button>
         </div>
       </div>
-    </div>
-
-    <div id="warning" style="display: none">
-      <p>⚠️ <small>Reason...</small></p>
     </div>
 
     <div id="offline" class="hidden container mx-auto px-4 py-8">
