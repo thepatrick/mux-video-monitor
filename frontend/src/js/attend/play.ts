@@ -5,10 +5,10 @@ import { createSetTitleLabel } from '../dynamic/createSetTitleLabel';
 import { fetchRooms } from '../fetchRooms';
 import { MuxStreamState, fetchState } from '../fetchState';
 import { AccessDenied } from '../helpers/AccessDenied';
-import { isFailure, successValue } from '../helpers/result';
+import { Result, isFailure, success, successValue } from '../helpers/result';
 import { nowIs } from '../nowIs';
 
-const createPlayer = async (id: string, defaultName: string) => {
+const createPlayer = async (id: string, defaultName: string): Promise<Result<Error, void>> => {
   if (!Hls.isSupported()) {
     window.location.href = '/attend.html?err=hls-not-supported';
     return;
@@ -240,6 +240,8 @@ const createPlayer = async (id: string, defaultName: string) => {
 
   lastUpdate('Starting up...');
   await refreshFromState(false);
+
+  return success(undefined);
 };
 
 const run = async () => {
