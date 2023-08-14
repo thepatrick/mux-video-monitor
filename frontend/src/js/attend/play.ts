@@ -2,22 +2,21 @@ import Hls from 'hls.js';
 import { createAblySingleStream } from '../ably/createAblyOrchestrator';
 import { createTextThing } from '../createTextThing';
 import { createSetTitleLabel } from '../dynamic/createSetTitleLabel';
-import { fetchRooms } from '../fetchRooms';
 import { MuxStreamState, fetchState } from '../fetchState';
 import { AccessDenied } from '../helpers/AccessDenied';
 import { Result, isFailure, success, successValue } from '../helpers/result';
 import { nowIs } from '../nowIs';
 import { NotFound } from '../helpers/NotFound';
 
-const createPlayer = async (id: string, defaultName: string): Promise<Result<Error, void>> => {
+const createPlayer = async (id: string): Promise<Result<Error, void>> => {
   if (!Hls.isSupported()) {
     window.location.href = '/hls-not-supported.html';
     return;
   }
 
+  const loadingEl = document.querySelector('#loading');
   const video = document.getElementById('player') as HTMLVideoElement;
   const videoContainer = document.getElementById('video-row') as HTMLDivElement;
-
   const warningEl = document.getElementById('warning');
   const offlineEl = document.getElementById('offline');
   const roomNameEl = document.getElementById('room-name');
@@ -29,6 +28,11 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
 
   const params = new URL(location.href).searchParams;
   const hlsDebug = params.get('hlsdebug') === 'true';
+  const showLastUpdate = params.get('showlastupdate') === 'true';
+
+  if (showLastUpdate) {
+    lastUpdateEl.classList.remove('hidden');
+  }
 
   const hls = new Hls({
     debug: hlsDebug,
@@ -70,7 +74,7 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
 
   const setTitleLabel = createSetTitleLabel(roomNameEl);
 
-  let currentRoomName = defaultName;
+  let currentRoomName = '';
   let currentStreamURL;
 
   const showError = (message: string) => {
@@ -121,6 +125,8 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
         state = successValue(maybeState);
       }
     }
+
+    loadingEl.classList.add('hidden');
 
     currentRoomName = state.title;
 
@@ -257,31 +263,9 @@ const run = async () => {
 
   const params = new URLSearchParams(location.search.slice(1));
 
-  const roomsResponse = await fetchRooms();
-
-  if (isFailure(roomsResponse)) {
-    if (roomsResponse.value instanceof AccessDenied) {
-      throw roomsResponse.value;
-    }
-    alert('Could not get rooms. Try again.');
-    return;
-  }
-
-  const rooms = successValue(roomsResponse);
-  if (!params.has('stream')) {
-    window.location.href = '/stream-not-found.html';
-  }
-
   const roomId = params.get('stream');
-  const room = rooms.find(({ id }) => id === roomId);
 
-  if (!room) {
-    window.location.href = '/stream-not-found.html';
-  }
-
-  // TODO: Unmute button!
-
-  const player = await createPlayer(room.id, room.name);
+  const player = await createPlayer(roomId);
   if (isFailure(player)) {
     throw player.value;
   }
