@@ -1,11 +1,11 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { isFailure, Result, success, successValue } from '../../helpers/result';
-import { StreamStateDocument, StreamStateWithTitle } from './StreamState';
-import { getDynamoCacheDocument } from '../../helpers/getDynamoCacheDocument';
-import { makeGetStreamStateFromSSMAndMux } from './makeGetStreamStateFromSSMAndMux';
-import { makeRefreshStreamState, ageLimit } from './refreshStreamState';
-import { SSM } from '@aws-sdk/client-ssm';
 import { credentialProvider } from '../../helpers/credentialProvider';
+import { getDynamoCacheDocument } from '../../helpers/getDynamoCacheDocument';
+import { isFailure, Result, success, successValue } from '../../helpers/result';
+import { ssm } from '../../helpers/ssm';
+import { makeGetStreamStateFromSSMAndMux } from './makeGetStreamStateFromSSMAndMux';
+import { ageLimit, makeRefreshStreamState } from './refreshStreamState';
+import { StreamStateDocument, StreamStateWithTitle } from './StreamState';
 
 export const getStreamStateFromDynamo = async (
   tableName: string,
@@ -14,7 +14,7 @@ export const getStreamStateFromDynamo = async (
 ): Promise<Result<Error, StreamStateWithTitle>> => {
   const dynamo = new DynamoDB({ credentials: credentialProvider });
 
-  const getStreamStateFromSSMAndMux = makeGetStreamStateFromSSMAndMux(new SSM({ credentials: credentialProvider }));
+  const getStreamStateFromSSMAndMux = makeGetStreamStateFromSSMAndMux(ssm);
 
   const refresh = makeRefreshStreamState(getStreamStateFromSSMAndMux, dynamo, tableName);
 

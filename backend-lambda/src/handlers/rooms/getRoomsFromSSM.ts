@@ -1,17 +1,14 @@
-import { SSM } from '@aws-sdk/client-ssm';
 import PQueue from '@esm2cjs/p-queue';
-import { failure, isFailure, isSuccess, Result, success, successValue } from '../../helpers/result';
-import { getRoomWithTags } from './getRoomWithTags';
-import { getOrderFromTag } from './getOrderFromTag';
 import { notUndefined } from '../../helpers/notUndefined';
+import { failure, isFailure, isSuccess, Result, success, successValue } from '../../helpers/result';
+import { ssm } from '../../helpers/ssm';
+import { getOrderFromTag } from './getOrderFromTag';
+import { getRoomWithTags } from './getRoomWithTags';
 import { Room } from './Room';
-import { credentialProvider } from '../../helpers/credentialProvider';
 
 const roomTagsQueue = new PQueue({ concurrency: 4 });
 
 export const getRoomsFromSSM = async (): Promise<Result<Error, Room[]>> => {
-  const ssm = new SSM({ credentials: credentialProvider });
-
   const path = '/multiview/mux/';
 
   const { Parameters } = await ssm.getParametersByPath({ Path: path });

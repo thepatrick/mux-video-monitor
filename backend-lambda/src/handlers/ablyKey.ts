@@ -1,10 +1,9 @@
-import { SSM } from '@aws-sdk/client-ssm';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { catchErrors } from '../helpers/catchErrors';
-import { credentialProvider } from '../helpers/credentialProvider';
 import { maybeGetSecret } from '../helpers/maybeGetSecret';
 import { accessDenied, notFound, response } from '../helpers/response';
 import { isFailure, successValue } from '../helpers/result';
+import { ssm } from '../helpers/ssm';
 import { verifyTokenCookie } from '../helpers/verifyTokenCookie';
 
 const ABLY_CLIENT_KEY = process.env.ABLY_CLIENT_KEY;
@@ -15,7 +14,6 @@ export const ablyKey: APIGatewayProxyHandlerV2 = catchErrors(async (event, conte
     console.log('ABLY_CLIENT_KEY not set');
     return notFound();
   }
-  const ssm = new SSM({ credentials: credentialProvider });
 
   if (!(await verifyTokenCookie(ssm, event))) {
     return accessDenied();

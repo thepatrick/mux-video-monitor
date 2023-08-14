@@ -1,9 +1,8 @@
-import { SSM } from '@aws-sdk/client-ssm';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { catchErrors } from '../helpers/catchErrors';
-import { credentialProvider } from '../helpers/credentialProvider';
 import { accessDenied, response } from '../helpers/response';
 import { isFailure } from '../helpers/result';
+import { ssm } from '../helpers/ssm';
 import { verifyTokenCookie } from '../helpers/verifyTokenCookie';
 import { getRoomsFromDynamo } from './rooms/getRoomsFromDynamo';
 
@@ -14,7 +13,6 @@ export const refresh: APIGatewayProxyHandlerV2 = catchErrors(async (event, conte
   if (!TableName) {
     throw new Error('CACHE_TABLE_NAME not set');
   }
-  const ssm = new SSM({ credentials: credentialProvider });
 
   if (!(await verifyTokenCookie(ssm, event))) {
     return accessDenied();
