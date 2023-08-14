@@ -236,6 +236,7 @@ Resources:
                   - !GetAtt BackendRefreshFn.Arn
                   - !GetAtt BackendMuxFn.Arn
                   - !GetAtt BackendAblyKeySlFn.Arn
+                  - !Sub "${BackendAblyKeySlFn.Arn}:live"
                   - !GetAtt BackendAttendFn.Arn
 
   BackendAPI:
