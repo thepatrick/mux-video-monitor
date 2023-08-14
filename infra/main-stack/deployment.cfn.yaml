@@ -192,7 +192,7 @@ Resources:
     Type: AWS::Lambda::Alias
     Properties:
       Description: "Returns the Ably client key"
-      FunctionName: !Ref BackendAblyKeyFn.Arn
+      FunctionName: !GetAtt BackendAblyKeyFn.Arn
       FunctionVersion: $LATEST
       Name: BackendAblyKey
       # ProvisionedConcurrencyConfig: ProvisionedConcurrencyConfiguration
