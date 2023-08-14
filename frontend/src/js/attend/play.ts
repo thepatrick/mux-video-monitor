@@ -22,6 +22,8 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
   const offlineEl = document.getElementById('offline');
   const roomNameEl = document.getElementById('room-name');
   const lastUpdateEl = document.getElementById('last-update') as HTMLDivElement;
+  const muteOverlay = document.getElementById('mute-button') as HTMLDivElement;
+  const muteButton = muteOverlay.querySelector('button');
 
   const lastUpdate = createTextThing(lastUpdateEl);
 
@@ -45,6 +47,11 @@ const createPlayer = async (id: string, defaultName: string): Promise<Result<Err
   hls.on(Hls.Events.MEDIA_ATTACHED, () => {
     video.muted = true;
     void video.play();
+  });
+
+  muteButton.addEventListener('click', () => {
+    video.muted = !video.muted;
+    muteOverlay.classList.add('hidden');
   });
 
   const updateLastUpdate = () => {

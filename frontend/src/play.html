@@ -19,9 +19,20 @@
       <h2 class="text-4xl font-thin text-green-500" id="room-name">Loading...</h2>
     </header>
 
-    <div id="video-row" class="w-full hidden">
+    <div id="video-row" class="relative w-full hidden">
       <video controls id="player" class="w-full h-full" tabindex="0"></video>
+      <div id="mute-button" class="flex flex-col h-full w-full absolute top-0 left-0 justify-center">
+        <div class="flex-initial flex flex-row justify-center content-center">
+          <button
+            class="flex-initial p-8 bg-green-500 rounded-3xl text-white text-9xl material-icons-outlined shadow-2xl active:shadow-none active:bg-green-700"
+            title="Unmute audio"
+          >
+            volume_off
+          </button>
+        </div>
+      </div>
     </div>
+
     <div id="warning" style="display: none">
       <p>⚠️ <small>Reason...</small></p>
     </div>
