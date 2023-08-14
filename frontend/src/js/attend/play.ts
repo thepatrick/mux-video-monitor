@@ -1,10 +1,12 @@
-import { createAblySingleStream } from '../ably/createAblyOrchestrator';
-import { createSetTitleLabel } from '../dynamic/createSetTitleLabel';
-import { Room, fetchRooms } from '../fetchRooms';
 import Hls from 'hls.js';
-import { MuxStreamState, fetchState } from '../fetchState';
-import { nowIs } from '../nowIs';
+import { createAblySingleStream } from '../ably/createAblyOrchestrator';
 import { createTextThing } from '../createTextThing';
+import { createSetTitleLabel } from '../dynamic/createSetTitleLabel';
+import { fetchRooms } from '../fetchRooms';
+import { MuxStreamState, fetchState } from '../fetchState';
+import { AccessDenied } from '../helpers/AccessDenied';
+import { isFailure, successValue } from '../helpers/result';
+import { nowIs } from '../nowIs';
 
 const createPlayer = async (id: string, defaultName: string) => {
   if (!Hls.isSupported()) {
@@ -233,12 +235,16 @@ const run = async () => {
 
   const roomsResponse = await fetchRooms();
 
-  if (!roomsResponse.ok) {
+  if (isFailure(roomsResponse)) {
+    if (roomsResponse.value instanceof AccessDenied) {
+      window.location.href = '/access-denied.html';
+      return;
+    }
     alert('Could not get rooms. Try again.');
     return;
   }
 
-  const rooms: Room[] = roomsResponse.rooms;
+  const rooms = successValue(roomsResponse);
   if (!params.has('stream')) {
     window.location.href = '/attend.html?err=not-found';
   }

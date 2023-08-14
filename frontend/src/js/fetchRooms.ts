@@ -1,18 +1,10 @@
 import { nanoid } from 'nanoid';
+import { Result, failure, success } from './helpers/result';
+import { AccessDenied } from './helpers/AccessDenied';
 
 export interface Room {
   id: string;
   name: string;
-}
-
-interface FetchRoomsOk {
-  ok: true;
-  rooms: Room[];
-}
-
-interface FetchRoomsError {
-  ok: false;
-  error: string;
 }
 
 interface FetchRoomsResponseRoom {
@@ -30,13 +22,17 @@ interface FetchRoomsResponseError {
   error: string;
 }
 
-export const fetchRooms = async (): Promise<FetchRoomsOk | FetchRoomsError> => {
+export const fetchRooms = async (): Promise<Result<Error, Room[]>> => {
   try {
     const before = Date.now();
     const fetchResponse = await fetch(`/api/stream?${nanoid()}`, { credentials: 'include' });
+
     const rooms = (await fetchResponse.json()) as FetchRoomsResponseOk | FetchRoomsResponseError;
 
     if (rooms.ok === false) {
+      if (fetchResponse.status === 403) {
+        throw new AccessDenied(rooms.error, fetchResponse.status);
+      }
       throw new Error(rooms.error);
     }
 
@@ -48,10 +44,9 @@ export const fetchRooms = async (): Promise<FetchRoomsOk | FetchRoomsError> => {
     const totalTime = Date.now() - before;
 
     console.log(`[Rooms] Got rooms in ${totalTime}ms`, rooms);
-
-    return { ok: true, rooms: r };
+    return success(r);
   } catch (err) {
-    return { ok: false, error: (err as Error).message };
+    return failure(err as Error);
   }
 };
 

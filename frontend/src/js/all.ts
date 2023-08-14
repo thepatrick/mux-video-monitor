@@ -1,11 +1,13 @@
-import { createStreamIframe } from './createStreamIframe';
-import { fetchRooms, iframeURI, Room } from './fetchRooms';
-import { roomLayouts } from './roomLayouts';
-import { wait } from './wait';
+import { createAblyOrchestrator } from './ably/createAblyOrchestrator';
+import { createNextPrevious } from './createNextPrevious';
 import { createPauseAudioHopper } from './createPauseAudioHopper';
 import { createStartAudioHopper } from './createStartAudioHopper';
-import { createNextPrevious } from './createNextPrevious';
-import { createAblyOrchestrator } from './ably/createAblyOrchestrator';
+import { createStreamIframe } from './createStreamIframe';
+import { fetchRooms, iframeURI } from './fetchRooms';
+import { AccessDenied } from './helpers/AccessDenied';
+import { isFailure, successValue } from './helpers/result';
+import { roomLayouts } from './roomLayouts';
+import { wait } from './wait';
 
 type volumeFn = (volume: number) => void;
 
@@ -94,12 +96,16 @@ const run = async () => {
 
   const roomsResponse = await fetchRooms();
 
-  if (!roomsResponse.ok) {
+  if (isFailure(roomsResponse)) {
+    if (roomsResponse.value instanceof AccessDenied) {
+      window.location.href = '/access-denied.html';
+      return;
+    }
     alert('Could not get rooms. Try again.');
     return;
   }
 
-  let rooms: Room[] = roomsResponse.rooms;
+  let rooms = successValue(roomsResponse);
   if (params.has('only')) {
     const onlyId = params.get('only');
     rooms = rooms.filter(({ id }) => id === onlyId);
