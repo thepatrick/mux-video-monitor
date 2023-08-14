@@ -236,7 +236,7 @@ const createPlayer = async (id: string): Promise<Result<Error, void>> => {
     }
   });
 
-  const ably = await createAblySingleStream(({ roomId, state, streamURL, title }) => {
+  const ablyTask = createAblySingleStream(({ roomId, state, streamURL, title }) => {
     if (roomId !== id) {
       // Ignore this message, it's not for this room
       return;
@@ -248,12 +248,14 @@ const createPlayer = async (id: string): Promise<Result<Error, void>> => {
     }
   });
 
+  lastUpdate('Starting up...');
+  await refreshFromState(false);
+
+  const ably = await ablyTask;
+
   if (isFailure(ably)) {
     return ably;
   }
-
-  lastUpdate('Starting up...');
-  await refreshFromState(false);
 
   return success(undefined);
 };
