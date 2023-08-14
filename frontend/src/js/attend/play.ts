@@ -109,7 +109,7 @@ const createPlayer = async (id: string, defaultName: string) => {
     if (state.online === true) {
       video.style.display = '';
       videoContainer.classList.remove('hidden');
-      offlineEl.classList.remove('hidden');
+      offlineEl.classList.add('hidden');
       if (force || state.stream !== currentStreamURL) {
         hls.loadSource(state.stream + '?cdn=fastly');
       }
