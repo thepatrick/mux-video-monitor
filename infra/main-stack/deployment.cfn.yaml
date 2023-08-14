@@ -191,7 +191,6 @@ Resources:
   BackendAblyKeyFnVersion:
     Type: AWS::Lambda::Version
     Properties:
-      Description: !Sub "AblyKey ${BackendLambdaS3Key}"
       FunctionName: !GetAtt BackendAblyKeyFn.Arn
 
   BackendAttendFn:
