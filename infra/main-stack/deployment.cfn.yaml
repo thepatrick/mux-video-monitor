@@ -195,7 +195,9 @@ Resources:
     Properties:
       Handler: src/index.ablyKey
       Runtime: nodejs18.x
-      CodeUri: !Sub "s3://${BackendLambdaS3Bucket}/${BackendLambdaS3Key}"
+      CodeUri:
+        Bucket: !Ref BackendLambdaS3Bucket
+        Key: !Ref BackendLambdaS3Key
       Role: !GetAtt "BackendLambdaRole.Arn"
       Timeout: 25
       AutoPublishAlias: live
