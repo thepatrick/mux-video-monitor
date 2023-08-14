@@ -172,24 +172,6 @@ Resources:
           CACHE_TABLE_NAME: !Ref "CacheTable"
           ABLY_SERVER_KEY: "/multiview/ably/server"
 
-  BackendAblyKeyFn:
-    Type: AWS::Lambda::Function
-    Properties:
-      Code:
-        S3Bucket: !Ref BackendLambdaS3Bucket
-        S3Key: !Ref BackendLambdaS3Key
-      Handler: src/index.ablyKey
-      Role: !GetAtt "BackendLambdaRole.Arn"
-      Runtime: "nodejs18.x"
-      Timeout: 25
-      Environment:
-        Variables:
-          CACHE_TABLE_NAME: !Ref "CacheTable"
-          ABLY_CLIENT_KEY: "/multiview/ably/client"
-          ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
-          ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
-          ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
-
   BackendAblyKeySlFn:
     Type: AWS::Serverless::Function
     Properties:
@@ -208,6 +190,8 @@ Resources:
           ATTEND_JWT_PRIVATE_KEY: "/multiview/attend/ATTEND_JWT_PRIVATE_KEY"
           ATTEND_JWT_ISSUER: !Ref "AttendJWTIssuer"
           ATTEND_JWT_AUDIENCE: !Ref "AttendJWTAudience"
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 10
 
   BackendAttendFn:
     Type: AWS::Lambda::Function
@@ -251,7 +235,7 @@ Resources:
                   - !GetAtt BackendListRoomsFn.Arn
                   - !GetAtt BackendRefreshFn.Arn
                   - !GetAtt BackendMuxFn.Arn
-                  - !GetAtt BackendAblyKeyFn.Arn
+                  - !GetAtt BackendAblyKeySlFn.Arn
                   - !GetAtt BackendAttendFn.Arn
 
   BackendAPI:
@@ -370,7 +354,7 @@ Resources:
       IntegrationMethod: "POST"
       IntegrationType: "AWS_PROXY"
       PayloadFormatVersion: "2.0"
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendAblyKeyFn.Arn}/invocations"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendAblyKeySlFn.Arn}/invocations"
 
   BackendAblyKeyRoute:
     Type: AWS::ApiGatewayV2::Route
