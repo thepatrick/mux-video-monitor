@@ -26,7 +26,7 @@ export function createMeterDataMarkup(
   parent: HTMLElement,
   { vertical, fontSize, borderSize }: Config,
 ): MeterDataMarkup {
-  const { clientWidth, clientHeight } = {clientWidth:30.5,clientHeight:30.5}; // Monkeypatch for now - peer pyconau2023
+  const { clientWidth, clientHeight } = {clientWidth:80,clientHeight:80}; // Monkeypatch for now - peer pyconau2023
   if (vertical) {
     const tickWidth = fontSize * 2.0;
     const meterTop = fontSize * 1.5 + borderSize;
