@@ -128,15 +128,9 @@ export function createBars(
 
     barDiv.style.height = `calc(100% - ${meterTop}px)`;
     barDiv.style.width = width;
-    // barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
     barDiv.style.backgroundImage = gradientStyle;
     barDiv.style.top = `${meterTop}px`;
     barDiv.style.left = left;
-    // barDiv.style.left = `calc(((${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px})) * ${i}) + ${
-    //   tickWidth + borderSize * (i + 2)
-    // }px)`;
-
-    // `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
   });
   return barDivs;
 }
