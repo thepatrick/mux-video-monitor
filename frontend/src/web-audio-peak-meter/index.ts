@@ -79,9 +79,9 @@ export function createMeter(
 
   const append = appendChild(meterElement);
 
-  const meterDataFromMarkup = createMeterDataMarkup(meterElement, config);
+  const meterDataFromMarkup = createMeterDataMarkup(config);
 
-  createTicks(config, meterDataFromMarkup).map(append);
+  createTicks(config).map(append);
 
   createBars(config, meterDataFromMarkup, channelCount).map(append);
 

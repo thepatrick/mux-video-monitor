@@ -1,7 +1,4 @@
 export interface MeterDataMarkup {
-  vertical: boolean;
-  meterWidth: number;
-  meterHeight: number;
   meterTop: number;
   tickWidth: number;
 }

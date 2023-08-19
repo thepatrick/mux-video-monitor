@@ -2,7 +2,6 @@ export interface NodeConfig {
   refreshEveryApproxMs: number;
 }
 export interface Config {
-  vertical: boolean;
   borderSize: number;
   fontSize: number;
   peakFontSize: number;
@@ -21,7 +20,6 @@ export const defaultNodeConfig: NodeConfig = {
   refreshEveryApproxMs: 20,
 };
 export const defaultConfig: Config = {
-  vertical: true,
   borderSize: 1,
   fontSize: 9,
   peakFontSize: 9,
