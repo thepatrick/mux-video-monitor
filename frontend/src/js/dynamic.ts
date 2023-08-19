@@ -73,9 +73,9 @@ const run = async () => {
   let currentStreamURL;
 
   const showError = (message: string) => {
-    offlineEl.style.display = '';
+    // offlineEl.style.display = '';
     offlineEl.querySelector('p').textContent = `${message}`;
-    videoContainer.style.display = 'none';
+    // videoContainer.style.display = 'none';
   };
 
   let clearShowWarning;

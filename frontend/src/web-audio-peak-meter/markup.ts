@@ -62,13 +62,19 @@ export function createMasks(
       style: `position: absolute; background-color: ${backgroundColor} `,
     }),
   );
+
+  const leftPortion = (tickWidth + borderSize) / barDivs.length;
+
   barDivs.forEach((barDiv, i) => {
+    const width = `calc((1/${channelCount})*100% - (${leftPortion}px + ${borderSize * (i + 1)}px))`;
+    const left = `calc(${tickWidth + borderSize}px + ${
+      borderSize * (i + 1)
+    }px + ((1/${channelCount})*100% - ${leftPortion}px) * ${i})`;
+
     barDiv.style.height = `calc(100% - ${meterTop}px)`;
-    barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
+    barDiv.style.width = width;
     barDiv.style.top = `${meterTop}px`;
-    barDiv.style.left = `calc(((${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px})) * ${i}) + ${
-      tickWidth + borderSize * (i + 2)
-    }px)`;
+    barDiv.style.left = left;
     barDiv.style.transition = `height ${maskTransition}`;
   });
   return barDivs;
@@ -111,19 +117,24 @@ export function createBars(
     }),
   );
 
-  // const initialClipPath = audioClipPath(dbRange, dbRange);
-  // barDiv.style.clipPath = initialClipPath;
-  // barDiv.style.WebkitClipPath = initialClipPath;
+  const leftPortion = (tickWidth + borderSize) / barDivs.length;
 
   const gradientStyle = `linear-gradient(to bottom, ${gradient.join(', ')})`;
   barDivs.forEach((barDiv, i) => {
+    const width = `calc((1/${channelCount})*100% - (${leftPortion}px + ${borderSize * (i + 1)}px))`;
+    const left = `calc(${tickWidth + borderSize}px + ${
+      borderSize * (i + 1)
+    }px + ((1/${channelCount})*100% - ${leftPortion}px) * ${i})`;
+
     barDiv.style.height = `calc(100% - ${meterTop}px)`;
-    barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
+    barDiv.style.width = width;
+    // barDiv.style.width = `calc(${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px}))`;
     barDiv.style.backgroundImage = gradientStyle;
     barDiv.style.top = `${meterTop}px`;
-    barDiv.style.left = `calc(((${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px})) * ${i}) + ${
-      tickWidth + borderSize * (i + 2)
-    }px)`;
+    barDiv.style.left = left;
+    // barDiv.style.left = `calc(((${100 / channelCount}% - (${borderSize * 2 + tickWidth / channelCount}px})) * ${i}) + ${
+    //   tickWidth + borderSize * (i + 2)
+    // }px)`;
 
     // `${(barWidth + borderSize) * i + tickWidth + borderSize}px`;
   });
@@ -143,8 +154,11 @@ export function createPeakLabels(
   );
 
   labelDivs.forEach((label, i) => {
-    label.style.width = `calc((1/${channelCount})*100% * ${i})`;
-    label.style.left = `calc((((1/${channelCount})*100% * ${i}) + ${tickWidth}px)`;
+    const leftPortion = tickWidth / labelDivs.length;
+    const width = `calc((1/${channelCount})*100% - ${leftPortion}px)`;
+    label.style.width = width;
+    const left = `calc(${tickWidth}px + ((1/${channelCount})*100% - ${leftPortion}px) * ${i})`;
+    label.style.left = left;
     label.style.top = `${borderSize}px`;
   });
   return labelDivs;
