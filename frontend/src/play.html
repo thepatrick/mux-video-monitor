@@ -4,77 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./css/attend.css" rel="stylesheet" />
-    <!-- <link href="./css/dynamic.css" rel="stylesheet" /> -->
   </head>
   <body class="min-h-screen bg-white">
     <header class="container mx-auto px-4 py-8">
       <div class="flex">
-        <a
-          class="flex-initial text-2xl p-1 font-bold text-green-500 hover:bg-green-500 hover:text-white hover:rounded-lg"
-          href="attend.html"
-          >🔙</a
-        >
+        <!-- <a class="flex-initial text-2xl p-1 font-bold text-green-500 hover:bg-green-500 hover:text-white hover:rounded-lg" href="attend.html">🔙</a> -->
         <h1 class="flex-auto text-4xl font-bold text-green-500">PyCon AU 2023</h1>
       </div>
-      <h2 class="text-4xl font-thin text-green-500" id="room-name">&nbsp;</h2>
+      <h2 class="text-4xl font-thin text-green-500" id="room-name">Available Streams</h2>
     </header>
 
-    <main id="loading" class="container mx-auto px-4 md:px-16 py-8 md:py-16 space-y-4 text-gray-600">
-      <div class="p-4 bg-gray-50 -mx-8 font-light rounded-lg">
-        <div class="flex space-x-4 justify-center align-middle">
-          <h1 class="flex-initial text-2xl py-1 material-icons-outlined">sync</h1>
-          <div class="flex-auto space-y-4">
-            <p class="text-2xl font-thin">Loading stream...</p>
-          </div>
+    <main class="container mx-auto px-4 py-8">
+      <div class="flex space-x-4">
+        <h1 class="flex-initial text-4xl">👋</h1>
+        <div class="flex-auto space-y-4">
+          <h2 class="text-4xl font-thin">Talks are done</h2>
+
+          <p class="text-2xl font-thin">Thanks for joining us for PyCon AU 2023! We hope you enjoyed the conference.</p>
+
+          <p class="text-2xl font-thin">
+            If you missed any of the talks, you can watch them on our
+            <a class="text-blue-600 hover:underline" href="https://www.youtube.com/@PyConAU">YouTube channel</a>
+            (the first talks are already up!)
+          </p>
+
+          <p class="text-2xl font-thin">
+            For now, maybe head back to
+            <a href="https://2023.pycon.org.au" class="text-blue-600 hover:underline">PyCon AU 2023 website.</a>
+          </p>
+
+          <p class="text-2xl font-thin">Thanks again for joining us, and we hope to see you next year!</p>
         </div>
       </div>
     </main>
-
-    <div id="video-row" class="relative w-full hidden">
-      <video controls id="player" class="w-full h-full" tabindex="0"></video>
-      <div id="mute-button" class="flex flex-col h-full w-full absolute top-0 left-0 justify-center">
-        <div class="flex-initial flex flex-row justify-center content-center">
-          <button
-            class="flex-initial p-8 bg-green-500 rounded-3xl text-white text-9xl material-icons-outlined shadow-2xl active:shadow-none active:bg-green-700"
-            title="Unmute audio"
-          >
-            volume_off
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div id="warning" class="hidden p-4 bg-yellow-50 font-light">
-      <div class="flex space-x-4">
-        <h1 class="flex-initial text-2xl">⚠️</h1>
-        <div class="flex-auto space-y-4">
-          <p class="text-2xl font-thin">Something is a bit wonky right now</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="offline" class="hidden container mx-auto px-4 py-8">
-      <div class="flex space-x-4">
-        <h1 class="flex-initial text-4xl">⚠️</h1>
-        <div class="flex-auto space-y-4">
-          <p id="offline-title" class="text-4xl font-thin">This stream is offline right now.</p>
-          <p class="text-2xl font-thin">
-            You might want to check
-            <a href="http://2023.pycon.org.au/program/" class="text-blue-600 hover:underline">the program</a> or
-            <a href="attend.html" class="text-blue-600 hover:underline">the other streams</a>.
-          </p>
-          <p class="text-2xl font-thin">
-            If you're seeing this message when you expect the stream to be live for this room try refreshing this page.
-          </p>
-          <p class="text-2xl font-thin">
-            If you've had to refresh this page more than once, please let us know through Discord.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div id="last-update" class="hidden p-4 bg-gray-50 font-mono font-light">...</div>
-
-    <script type="module" src="./js/attend/play.ts"></script>
   </body>
 </html>
