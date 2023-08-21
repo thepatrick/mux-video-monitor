@@ -1,14 +1,21 @@
 const { globalAgent } = require('https');
-const { createProxyMiddleware } = require("http-proxy-middleware");
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const cookie = 'NDV_AUD=' + encodeURIComponent(process.env.NDV_AUD_COOKIE);
 
 module.exports = function (app) {
   app.use(
-    createProxyMiddleware("/api", {
-      target: "https://mux-monitor.aws.nextdayvideo.com.au:443/",
-      agent  : globalAgent,
+    createProxyMiddleware('/api', {
+      target: 'https://live.aws.nextdayvideo.com.au:443/',
+      agent: globalAgent,
+      cookieDomainRewrite: 'localhost',
       headers: {
-        host: 'mux-monitor.aws.nextdayvideo.com.au'
-      }
-    })
+        host: 'live.aws.nextdayvideo.com.au',
+      },
+      onProxyReq: function (proxyReq) {
+        console.log('setting cookie');
+        proxyReq.setHeader('cookie', cookie);
+      },
+    }),
   );
 };
