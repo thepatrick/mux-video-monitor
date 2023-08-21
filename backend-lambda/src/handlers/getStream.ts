@@ -12,7 +12,7 @@ export const getStream: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  if (!(await verifyTokenCookie(event))) {
+  if (isFailure(await verifyTokenCookie(event))) {
     return accessDenied();
   }
 

@@ -12,9 +12,19 @@ export const listRooms: APIGatewayProxyHandlerV2 = catchErrors(async (event, con
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  if (!(await verifyTokenCookie(event))) {
+  const maybeToken = await verifyTokenCookie(event);
+  if (isFailure(maybeToken)) {
     return accessDenied();
   }
+
+  // const token = successValue(maybeToken);
+
+  // getEvent(TableName, event);
+  //  ... { rules: [
+  //    { subject: 'list', where: { role: 1234 }, action: 'allow' },
+  //    { subject: 'play', where: { role: 1234 }, action: 'allow, },
+  //    { subject: 'list', where: {}, action: 'allow' },
+  //  ] }
 
   const maybeRooms = await getRoomsFromDynamo(TableName, false);
 

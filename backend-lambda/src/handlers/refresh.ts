@@ -14,7 +14,7 @@ export const refresh: APIGatewayProxyHandlerV2 = catchErrors(async (event, conte
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  if (!(await verifyTokenCookie(event, true))) {
+  if (isFailure(await verifyTokenCookie(event, true))) {
     return accessDenied();
   }
 

@@ -3,6 +3,8 @@ type SuccessT<T> = { ok: true; value: T };
 
 export type Result<Failure, Success> = FailureT<Failure> | SuccessT<Success>;
 
+export type ResultP<Failure, Success> = Promise<Result<Failure, Success>>;
+
 export const failure = <L = never, R = never>(value: L): Result<L, R> => ({ ok: false, value });
 
 export const success = <L = never, R = never>(value: R): Result<L, R> => ({ ok: true, value });

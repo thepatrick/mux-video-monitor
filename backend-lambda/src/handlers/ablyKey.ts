@@ -1,13 +1,11 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import { ABLY_CLIENT_KEY } from '../helpers/ABLY_CLIENT_KEY';
+import { TableName } from '../helpers/TableName';
 import { catchErrors } from '../helpers/catchErrors';
-import { maybeGetSecret } from '../helpers/maybeGetSecret';
+import { getCachedSecret } from '../helpers/getCachedSecret';
 import { accessDenied, notFound, response } from '../helpers/response';
 import { isFailure, successValue } from '../helpers/result';
-import { ssm } from '../helpers/ssm';
 import { verifyTokenCookie } from '../helpers/verifyTokenCookie';
-import { getCachedSecret } from '../helpers/getCachedSecret';
-import { TableName } from '../helpers/TableName';
-import { ABLY_CLIENT_KEY } from '../helpers/ABLY_CLIENT_KEY';
 
 // export const getRoomsFromDynamo = async (tableName: string, forceRefresh: boolean): Promise<Result<Error, Room[]>> => {
 //   const refresh = makeRefresh(getRoomsFromSSM, dynamo, tableName);
@@ -22,7 +20,7 @@ export const ablyKey: APIGatewayProxyHandlerV2 = catchErrors(async (event, conte
     throw new Error('CACHE_TABLE_NAME not set');
   }
 
-  if (!(await verifyTokenCookie(event))) {
+  if (isFailure(await verifyTokenCookie(event))) {
     return accessDenied();
   }
 

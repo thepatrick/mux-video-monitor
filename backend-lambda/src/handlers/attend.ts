@@ -1,8 +1,8 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { catchErrors } from '../helpers/catchErrors';
 import { accessDenied, notFound, response } from '../helpers/response';
-import { ssm } from '../helpers/ssm';
 import { verifyToken } from '../helpers/verifyToken';
+import { isFailure } from '../helpers/result';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const attend: APIGatewayProxyHandlerV2 = catchErrors(async (event, context) => {
@@ -19,7 +19,9 @@ export const attend: APIGatewayProxyHandlerV2 = catchErrors(async (event, contex
     destination = `https://${ourHost}/play.html?where=${encodeURIComponent(where)}`;
   }
 
-  if (!(await verifyToken(token))) {
+  const maybeToken = await verifyToken(token);
+
+  if (isFailure(maybeToken)) {
     return accessDenied();
   }
 
