@@ -20,7 +20,7 @@
     "@aws-sdk/client-dynamodb": "^3.370.0",
     "@aws-sdk/client-ssm": "^3.370.0",
     "@aws-sdk/credential-providers": "^3.370.0",
-    "@aws-sdk/util-dynamodb": "^3.370.0",
+    "@aws-sdk/util-dynamodb": "^3.388.0",
     "@esm2cjs/p-queue": "^7.3.0",
     "@mux/mux-node": "^7.0.0",
     "@types/set-cookie-parser": "^2.4.3",
