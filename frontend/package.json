@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@types/chromecast-caf-sender": "^1.0.5",
-    "ably": "^1.2.15",
+    "ably": "^1.2.43",
     "hls.js": "^1.0.10",
     "nanoid": "^4.0.0"
   },
