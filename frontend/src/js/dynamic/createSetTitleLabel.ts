@@ -7,7 +7,7 @@ interface SetTitleLabelArguments {
 
 export const createSetTitleLabel =
   (el: HTMLElement) =>
-  ({ loading = false, live = false, room, error }: SetTitleLabelArguments): void => {
+  ({ loading = false, room, error }: SetTitleLabelArguments): void => {
     let description = '';
     if (loading) {
       description = '...';

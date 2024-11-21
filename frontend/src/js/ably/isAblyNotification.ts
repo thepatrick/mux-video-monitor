@@ -8,5 +8,5 @@ export const isAblyNotification = (maybe: unknown): maybe is AblyNotification =>
     return false;
   }
 
-  return Object.getOwnPropertyDescriptor(maybe, 'AblyNotification')?.value === true ?? false;
+  return Object.getOwnPropertyDescriptor(maybe, 'AblyNotification')?.value === true;
 };

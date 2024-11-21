@@ -78,7 +78,7 @@ const run = async () => {
     videoContainer.style.display = 'none';
   };
 
-  let clearShowWarning;
+  let clearShowWarning: NodeJS.Timeout;
   const showWarning = (message: string) => {
     warningEl.style.display = '';
     warningEl.querySelector('small').textContent = `${message} (${nowIs()})`;

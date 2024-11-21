@@ -3,7 +3,7 @@ import { MuxStreamState, fetchState } from './fetchState';
 import { AccessDenied } from './helpers/AccessDenied';
 import { isFailure, successValue } from './helpers/result';
 
-const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
+const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
 const run = async () => {
   const warningEl = document.getElementById('warning');
@@ -49,7 +49,7 @@ const run = async () => {
     stopCastPlayback();
   };
 
-  let clearShowWarning;
+  let clearShowWarning: NodeJS.Timeout;
   const showWarning = (message: string) => {
     warningEl.style.display = '';
     warningEl.querySelector('small').textContent = `${message} (${new Date().toTimeString()})`;

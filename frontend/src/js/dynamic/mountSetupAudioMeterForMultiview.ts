@@ -12,7 +12,7 @@ const isSetupAudioMeter = (maybe: unknown): maybe is SetupAudioMeter => {
     return false;
   }
 
-  return Object.getOwnPropertyDescriptor(maybe, 'SetupAudioMeter')?.value === true ?? false;
+  return Object.getOwnPropertyDescriptor(maybe, 'SetupAudioMeter')?.value === true;
 };
 
 interface SetAudioVolume {
@@ -28,7 +28,7 @@ const isSetAudioVolume = (maybe: unknown): maybe is SetAudioVolume => {
     return false;
   }
 
-  return Object.getOwnPropertyDescriptor(maybe, 'SetAudioVolume')?.value === true ?? false;
+  return Object.getOwnPropertyDescriptor(maybe, 'SetAudioVolume')?.value === true;
 };
 
 export const mountSetupAudioMeterForMultiview = (
