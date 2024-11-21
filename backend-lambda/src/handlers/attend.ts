@@ -1,7 +1,6 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { catchErrors } from '../helpers/catchErrors';
 import { accessDenied, notFound, response } from '../helpers/response';
-import { ssm } from '../helpers/ssm';
 import { verifyToken } from '../helpers/verifyToken';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

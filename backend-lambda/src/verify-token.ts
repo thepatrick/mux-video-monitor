@@ -1,4 +1,4 @@
-import { sign, verify } from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 
 const ATTEND_JWT_PRIVATE_KEY = process.env.ATTEND_JWT_PRIVATE_KEY;
 const ATTEND_JWT_AUDIENCE = process.env.ATTEND_JWT_AUDIENCE;
