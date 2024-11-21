@@ -2,12 +2,16 @@
   "ok": true,
   "rooms": [
     {
-      "id": "online",
-      "title": "Online"
+      "id": "goldfields",
+      "title": "Goldfeilds"
     },
     {
-      "id": "offline",
-      "title": "Offline"
+      "id": "eureka-2",
+      "title": "Eureka 2"
+    },
+    {
+      "id": "eureka-3",
+      "title": "Eureka 3"
     }
   ]
 }

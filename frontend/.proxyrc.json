@@ -1,10 +1,9 @@
 {
-  "/apiX": {
+  "/api": {
     "target": "http://localhost:8080/",
     "pathRewrite": {
       "^/api/stream\\?.*": "streams.json",
-      "^/api/stream/online": "stream-online.json",
-      "^/api/stream/offline": "stream-offline.json"
+      "^/api/stream/(.*)\\?.*": "stream-$1.json"
     }
   }
 }

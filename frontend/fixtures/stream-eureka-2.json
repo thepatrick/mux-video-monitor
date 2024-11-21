@@ -1,0 +1,6 @@
+{
+  "ok": true,
+  "online": false,
+  "stream": "http://10.42.0.56:8888/orange/video1_stream.m3u8",
+  "title": "Online"
+}

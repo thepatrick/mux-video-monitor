@@ -3,6 +3,12 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const cookie = 'NDV_AUD=' + encodeURIComponent(process.env.NDV_AUD_COOKIE);
 
+const streams = {
+  goldfields: {},
+  'eureka-2': {},
+  'eureka-3': {},
+};
+
 module.exports = function (app) {
   app.use(
     createProxyMiddleware('/api', {
