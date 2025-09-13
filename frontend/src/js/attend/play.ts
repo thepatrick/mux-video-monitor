@@ -30,6 +30,8 @@ const createPlayer = async (id: string): Promise<Result<Error, void>> => {
   const hlsDebug = params.get('hlsdebug') === 'true';
   const showLastUpdate = params.get('showlastupdate') === 'true';
 
+  const showMuteAfterAttach = params.get('showmuteafterattach') === 'true';
+
   if (showLastUpdate) {
     lastUpdateEl.classList.remove('hidden');
   }
@@ -49,6 +51,9 @@ const createPlayer = async (id: string): Promise<Result<Error, void>> => {
   });
   hls.attachMedia(video);
   hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+    if (showMuteAfterAttach) {
+      muteOverlay.classList.remove('hidden');
+    }
     video.muted = true;
     void video.play();
   });
